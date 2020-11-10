@@ -1,0 +1,36 @@
+from models.song import Song
+from services.audio_service import Audio_Service
+
+
+class Song_Service:
+
+    def __init__(self, songs: [Song], callback):
+        self._songs = songs
+        self._index = 0
+        self._callback = callback
+        self._audio_init_()
+
+    def _audio_init_(self):
+        song = self.current()
+        self._audioService = Audio_Service(song, self._callback)
+
+    def forward(self):
+        self._index = self._index+1
+        self._index = 0 if self._index == len(
+            self._songs) else self._index
+        self._audio_init_()
+
+    def current(self):
+        return self._songs[self._index]
+
+    def forwardAudio(self):
+        self._audioService.forward()
+
+    def currentAudio(self):
+        return self._audioService.current()
+
+    def play(self):
+        return self._audioService.play()
+
+    def stop(self):
+        return self._audioService.stop()

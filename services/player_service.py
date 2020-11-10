@@ -6,7 +6,7 @@ import threading
 import time
 
 
-class Player_Controller:
+class Player_Service:
 
     def __init__(self, audio: Audio, callback, autoforward):
 
@@ -51,12 +51,12 @@ class Player_Controller:
                 keepon = False
                 self._autoforward()
                 self._callback('AUDIO_ENDS')
-                print('music end event play')
+                print('song end event play')
 
             elif event.type == self._ends_by_stop:
                 keepon = False
                 self._callback('AUDIO_ENDS')
-                print('music end event by stop')
+                print('song end event by stop')
 
         if keepon:
             time.sleep(0.2)

@@ -1,7 +1,7 @@
 from models.audio import Audio
 
 
-class Music:
+class Song:
     def __init__(self, id: str, name: str, autoforward: bool, audios: [Audio]):
         self._id = id
         self._name = name

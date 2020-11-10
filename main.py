@@ -1,60 +1,70 @@
 from tkinter import *
-from models.music import Music
+from models.song import Song
 from models.audio import Audio
-from controllers.music_controller import Music_Controller
+from services.song_service import Song_Service
+from services.source_service import Source_Service
 from helpers.ui_helper import label_format
+
+import json
+
+f = open('source.json')
+data = json.load(f)
+print('>', data)
+f.close()
 
 root = Tk()
 root.title('Cherry')
 root.geometry("600x400")
 root.resizable(False, False)
 
-musics = [
-    Music(1, 'Kaus Trem', False, [Audio('1', 'intro', 'audios/kaus-trem/kaus_1.wav'),
-                           Audio('2', 'apito', 'audios/kaus-trem/kaus_2.wav')]),
-    Music(1, 'Os tiras estão chegando', False, [
-          Audio('1', 'tiras intro', '1.wav'), Audio('2', 'tiras 2', '2.wav')]),
-    Music(1, 'Linhas de Nasca', False, [
-          Audio('1', 'Linhas intro', '1.wav'), Audio('2', 'Linhas meio', '2.wav')])
+# source = Source_Service()
+
+songs = [
+    Song(1, 'Kaus Trem', False, [Audio('1', 'intro', 'audios/kaus-trem/kaus_1.wav'),
+                                 Audio('2', 'apito', 'audios/kaus-trem/kaus_2.wav')]),
+    Song(1, 'Os tiras estão chegando', False, [
+        Audio('1', 'tiras intro', '1.wav'), Audio('2', 'tiras 2', '2.wav')]),
+    Song(1, 'Linhas de Nasca', False, [
+        Audio('1', 'Linhas intro', '1.wav'), Audio('2', 'Linhas meio', '2.wav')])
 ]
 
 labels = []
 
-musicName = StringVar()
-musicNameLabel = Label(root, textvariable=musicName)
-musicNameLabel.grid(row=0, column=0)
+songName = StringVar()
+songNameLabel = Label(root, textvariable=songName)
+songNameLabel.grid(row=0, column=0)
 
-label_format(musicNameLabel, 20, False)
+label_format(songNameLabel, 20, False)
 
 
-def musicForwardButton_click():
-    musicController.forward()
+def songForwardButton_click():
+    songService.forward()
     screenBuild()
 
 
 def audioForwardButton_click():
-    musicController.forwardAudio()
+    songService.forwardAudio()
     screenBuild()
 
 
 def playButton_click():
-    musicController.play()
+    songService.play()
 
 
 def stopButton_click():
-    musicController.stop()
+    songService.stop()
 
 
 def screenBuild():
-    music = musicController.current()
-    musicName.set(music.name)
+    song = songService.current()
+    songName.set(song.name)
 
     for l in labels:
         l.destroy()
 
     labels.clear()
 
-    for i, audio in enumerate(music.audios):
+    for i, audio in enumerate(song.audios):
         label = Label(root, text=audio.name)
 
         label_format(label, 16, audio.selected)
@@ -69,11 +79,12 @@ def callback(command):
     elif command == 'AUDIO_ENDS':
         screenBuild()
 
-musicController = Music_Controller(musics, callback)
 
-musicForwardButton = Button(root, text="Music >>",
-                            command=musicForwardButton_click)
-musicForwardButton.grid(row=1, column=0)
+songService = Song_Service(songs, callback)
+
+songForwardButton = Button(root, text="Song >>",
+                           command=songForwardButton_click)
+songForwardButton.grid(row=1, column=0)
 
 audioForwardButton = Button(root, text="Audio >>",
                             command=audioForwardButton_click)
