@@ -46,6 +46,10 @@
         {
           "file": "linhas_3.wav",
           "name": "Narração"
+        },
+        {
+         "file": "linhas_4.wav",
+         "name": "Nave final"
         }
       ]
     },
@@ -61,6 +65,14 @@
         {
           "file": "tiras_2.wav",
           "name": "Sirenes e carros"
+        },
+        {
+          "file": "tiras_3.wav",
+          "name": "Fusca passando"
+        },
+        {
+          "file": "tiras_4.wav",
+          "name": "Fuscas finais"
         }
       ]
     }

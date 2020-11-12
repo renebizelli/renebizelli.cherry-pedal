@@ -22,7 +22,7 @@ class Song_Service:
 
     def backward(self):
         self._index = self._index-1
-        self._index = len(self._songs) if self._index == 0 else self._index
+        self._index = len(self._songs)-1 if self._index < 0 else self._index
         self._audio_init_()
 
     def current(self):
