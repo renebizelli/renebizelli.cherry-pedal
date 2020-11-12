@@ -8,21 +8,27 @@ import time
 
 class Player_Service:
 
-    def __init__(self, audio: Audio, callback, autoforward):
+    def __init__(self, song_id: str, audio: Audio, callback, autoforward):
 
+        self.song_id = song_id
         self._audio = audio
         self._callback = callback
         self._autoforward = autoforward
         self._ends_by_play = 9000
         self._ends_by_stop = 9001
 
-        if not os.path.isfile(audio.file):
+        self._file = self.__path_prepare__(song_id, audio)
+
+        if not os.path.isfile(self._file):
             self._callback('AUDIO_NOT_FOUND')
             raise Exception("Audio resource " + audio.file + " not found")
 
         pygame.init()
         pygame.mixer.init()
-        pygame.mixer.music.load(audio.file)
+        pygame.mixer.music.load(self._file)
+
+    def __path_prepare__(self, song_id: str, audio: Audio):
+        return "audios/{}/{}".format(song_id, audio.file)
 
     def play(self):
 

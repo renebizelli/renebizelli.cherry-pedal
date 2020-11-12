@@ -36,6 +36,6 @@ class Audio_Service:
     def __selected__(self):
         current = self.current()
         self._player = Player_Service(
-            current, self._callback, self.autoforward)
+            self._song.id, current, self._callback, self.autoforward)
         for audio in self._song.audios:
             audio.set_selected(current.id)
