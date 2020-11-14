@@ -20,16 +20,25 @@ class Source_Service:
 
             self._songs = []
 
+            path = self._data['path']
+
             for song in self._data['songs']:
 
                 audios = []
 
                 for audio in song['audios']:
+
+                    file = self.__path_file_prepare__(
+                        path, song['id'], audio['file'])
+
                     audios.append(
-                        Audio(audio['file'], audio['name'], audio['file']))
+                        Audio(audio['file'], audio['name'], file))
 
                 self._songs.append(Song(
                     song['id'], song['name'], song['autoforward'], audios))
+
+    def __path_file_prepare__(self, path: str, song_id: str, file:str):
+        return "{}/{}/{}".format(path, song_id, file)
 
     def get(self):
         return self._songs

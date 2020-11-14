@@ -39,8 +39,6 @@ def screenBuild():
     for l in audiosLabel:
         l.destroy()
 
-    audiosFrame = Frame(root, bg="white")
-    audiosFrame.grid(row=1, column=0, padx=10)
 
     audiosLabel.clear()
 
@@ -48,9 +46,10 @@ def screenBuild():
         label = Label(audiosFrame, text=audio.name, width=50)
         label_format(label, 16, audio.selected)
 
-        #label.grid(row=i, column=0)
+        label.place(x=0, y=i+10)
         label.pack()
         audiosLabel.append(label)
+
 
 
 def callback(command):
@@ -75,6 +74,10 @@ songName = StringVar()
 songNameLabel = Label(root, textvariable=songName, anchor="w", bd=2)
 label_format(songNameLabel, 40, False)
 songNameLabel.grid(row=0, column=0, sticky="w")
+
+audiosFrame = Frame(root, bg="red")
+audiosFrame.grid(row=1, column=0, padx=10)
+
 
 btnFrame = Frame(root)
 btnFrame.grid(row=3, column=0)
