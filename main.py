@@ -3,16 +3,20 @@ from models.song import Song
 from models.audio import Audio
 from services.song_service import Song_Service
 from services.source_service import Source_Service
-from helpers.ui_helper import label_format, window_configure
-from PIL import ImageTk, Image
+from helpers.ui_helper import UI_Helper 
 
-root = Tk()
-
+# root.grid_columnconfigure(0, weight=1, pad=0)
+# root.grid_columnconfigure(1, weight=1, pad=0)
+# root.grid_columnconfigure(2, weight=1, pad=0)
+# l1 = Label(root, text="Label 1", bg="blue")
+# l1.grid(row=0, column=0)
+# l2 = Label(root, text="Label 2", bg="green")
+# l2.grid(row=1, column=0)
+# root.mainloop()
 
 def songForwardButton_click():
     songService.forward()
     screenBuild()
-
 
 def songBackwardButton_click():
     songService.backward()
@@ -31,26 +35,13 @@ def playButton_click():
 def stopButton_click():
     songService.stop()
 
-
 def screenBuild():
     song = songService.current()
-    songName.set(song.name)
 
-    for l in audiosLabel:
-        l.destroy()
+    ui.redrawn(song)
 
-
-    audiosLabel.clear()
-
-    for i, audio in enumerate(song.audios):
-        label = Label(audiosFrame, text=audio.name, width=50)
-        label_format(label, 16, audio.selected)
-
-        label.place(x=0, y=i+10)
-        label.pack()
-        audiosLabel.append(label)
-
-
+    # ui.set_song_name(song)
+    ui.set_song_autoforward(song)
 
 def callback(command):
     if command == 'AUDIO_STARTS':
@@ -63,24 +54,20 @@ def end_app(a):
     exit()
 
 
-window_configure(root)
+def select_band(a):
+    print("double")
+
+root = Tk()
+
+ui = UI_Helper(root)
+
+ui.window_configure()
 
 source = Source_Service()
 songs = source.get()
 
-audiosLabel = []
-
-songName = StringVar()
-songNameLabel = Label(root, textvariable=songName, anchor="w", bd=2)
-label_format(songNameLabel, 40, False)
-songNameLabel.grid(row=0, column=0, sticky="w")
-
-audiosFrame = Frame(root, bg="red")
-audiosFrame.grid(row=1, column=0, padx=10)
-
-
 btnFrame = Frame(root)
-btnFrame.grid(row=3, column=0)
+btnFrame.grid(row=7, column=0)
 
 songService = Song_Service(songs, callback)
 
@@ -102,12 +89,7 @@ playButton.grid(row=1, column=3)
 stopButton = Button(btnFrame, text="Stop", command=stopButton_click)
 stopButton.grid(row=1, column=4)
 
-
-logo = ImageTk.PhotoImage(Image.open("assets/cherry.jpg"))
-labelLogo = Label(image=logo, bd=0)
-labelLogo.bind("<Button-1>", end_app)
-labelLogo.place(relx=0.9, rely=0.4, anchor="center")
-#labelLogo.grid(sticky=E, padx=5, pady=5)
+ui.cherry_button(end_app)
 
 screenBuild()
 
