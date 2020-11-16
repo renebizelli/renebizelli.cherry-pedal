@@ -4,10 +4,14 @@ from services.audio_service import Audio_Service
 
 class Song_Service:
 
-    def __init__(self, songs: [Song], callback):
-        self._songs = songs
+    def __init__(self, callback):
         self._index = 0
         self._callback = callback
+        self._songs = []
+
+    def set_songs(self, songs: [Song]):
+        self._songs = songs
+        self._index = 0
         self._audio_init_()
 
     def _audio_init_(self):

@@ -6,11 +6,32 @@
     "play": 65,
     "stop": 83
   },
-  "songs": [
+  "bands": [
+    {
+      "id": "super-bojo",
+      "name": "Super Bojo"
+    },
+    {
+      "id": "viva-hate",
+      "name": "Viva Hate"
+    }
+  ],
+  "viva-hate": {
+    "name": "How soon is now",
+    "id": "how-soon-is-now",
+    "autoforward": false,
+    "audios": [
+      {
+        "file": "how-soon-is-now_slide.wav",
+        "name": "Slide guitarra"
+      }
+    ]
+  },
+  "super-bojo": [
     {
       "name": "Kaus Trem",
       "id": "kaus-trem",
-      "autoforward" : true,
+      "autoforward": true,
       "audios": [
         {
           "file": "kaus_1.wav",
@@ -21,19 +42,19 @@
           "name": "Apito da intro"
         },
         {
-         "file": "kaus_3.wav",
-         "name": "Apito do meio"
+          "file": "kaus_3.wav",
+          "name": "Apito do meio"
         },
         {
-         "file": "kaus_4.wav",
-         "name": "Final"
+          "file": "kaus_4.wav",
+          "name": "Final"
         }
       ]
     },
     {
       "name": "Linhas de Nazca",
       "id": "linhas",
-      "autoforward" : false,
+      "autoforward": false,
       "audios": [
         {
           "file": "linhas_1.wav",
@@ -52,7 +73,7 @@
     {
       "name": "Os tiras estão chegando",
       "id": "tiras",
-      "autoforward" : true,
+      "autoforward": true,
       "audios": [
         {
           "file": "tiras_1.wav",

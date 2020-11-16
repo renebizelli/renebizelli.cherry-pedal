@@ -1,18 +1,11 @@
 from tkinter import *
 from models.song import Song
 from models.audio import Audio
+from models.band import Band
 from services.song_service import Song_Service
 from services.source_service import Source_Service
-from helpers.ui_helper import UI_Helper
-
-# root.grid_columnconfigure(0, weight=1, pad=0)
-# root.grid_columnconfigure(1, weight=1, pad=0)
-# root.grid_columnconfigure(2, weight=1, pad=0)
-# l1 = Label(root, text="Label 1", bg="blue")
-# l1.grid(row=0, column=0)
-# l2 = Label(root, text="Label 2", bg="green")
-# l2.grid(row=1, column=0)
-# root.mainloop()
+from apps.app_painel import Painel
+from apps.app_setup import Setup
 
 
 def songForwardButton_click():
@@ -40,7 +33,7 @@ def stopButton_click():
 
 def screenBuild():
     song = songService.current()
-    ui.redrawn(song, end_app)
+    painel.redrawn(song, end_app)
 
 
 def callback(command):
@@ -54,41 +47,48 @@ def end_app(a):
     exit()
 
 
-def select_band(a):
-    print("double")
+def band_selected(band: Band):
+    songs = source.songs(band)
+    songService.set_songs(songs)
+    print("select band", band)
 
 
 root = Tk()
 
-ui = UI_Helper(root)
+songService = Song_Service(callback)
 
-ui.window_configure()
+painel = Painel(root)
 
+painel.window_configure()
 source = Source_Service()
-songs = source.get()
+
+bands = source.bands()
+songs = []
+
+setup = Setup(root, bands, band_selected)
+setup.redrawn()
+
 
 btnFrame = Frame(root)
-btnFrame.grid(row=7, column=0)
-
-songService = Song_Service(songs, callback)
+btnFrame.pack()
 
 songForwardButton = Button(btnFrame, text="Song >>",
                            command=songForwardButton_click)
-songForwardButton.grid(row=1, column=0)
+songForwardButton.pack()
 
 songBackwardButton = Button(btnFrame, text="Song <<",
                             command=songBackwardButton_click)
-songBackwardButton.grid(row=1, column=1)
+songBackwardButton.pack()
 
 audioForwardButton = Button(btnFrame, text="Audio >>",
                             command=audioForwardButton_click)
-audioForwardButton.grid(row=1, column=2)
+audioForwardButton.pack()
 
 playButton = Button(btnFrame, text="Play", command=playButton_click)
-playButton.grid(row=1, column=3)
+playButton.pack()
 
 stopButton = Button(btnFrame, text="Stop", command=stopButton_click)
-stopButton.grid(row=1, column=4)
+stopButton.pack()
 
 screenBuild()
 
