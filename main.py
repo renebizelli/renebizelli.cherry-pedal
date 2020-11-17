@@ -8,50 +8,67 @@ from apps.app_painel import Painel
 from apps.app_setup import Setup
 
 
-def songForwardButton_click():
-    songService.forward()
-    screenBuild()
+def song_forward_click():
+    song_service.forward()
+    song_changed()
 
 
-def songBackwardButton_click():
-    songService.backward()
-    screenBuild()
+def song_backward_click():
+    song_service.backward()
+    song_changed()
 
 
-def audioForwardButton_click():
-    songService.forwardAudio()
-    screenBuild()
+def song_changed():
+    painel.play_indicator(False)
+    song_current = song_service.current()
+    if song_current is not None:
+        painel.song_drawn(song_current)
+        painel.autoforward_drawn(song_current)
+        painel.audios_drawn(song_current)
 
 
-def playButton_click():
-    songService.play()
+def audio_forward_click():
+    song_service.forwardAudio()
+    painel.play_indicator(False)
+    audio_changed()
 
 
-def stopButton_click():
-    songService.stop()
+def audio_changed():
+    song_current = song_service.current()
+    if song_current is not None:
+        painel.audios_drawn(song_current)
 
-def screenBuild():
-    song = songService.current()
-    if song is not None:
-        painel.redrawn(song, end_app)
+
+def play_click():
+    song_service.play()
+
+
+def stop_click():
+    song_service.stop()
 
 
 def callback(command):
     if command == 'AUDIO_STARTS':
+        painel.play_indicator(True)
         print("Start")
     elif command == 'AUDIO_ENDS':
-        screenBuild()
+        painel.play_indicator(False)
+        print("End")
 
-def end_app(args):
-    exit()
+    audio_changed()
+
 
 def band_selected(band: Band):
     songs = source.songs(band)
-    songService.set_songs(songs)
-    screenBuild()
+    song_service.set_songs(songs)
+    song_current = song_service.current()
+    if song_current is not None:
+        painel.redrawn(band, song_current)
 
-def show_setup(args):
+
+def band_click(args):
     setup.redrawn()
+
 
 root = Tk()
 root.title('Cherry')
@@ -66,51 +83,44 @@ screen_height = root.winfo_screenheight()
 position_top = int(screen_height/2 - window_height/2)
 position_right = int(screen_width / 2 - window_width/2)
 root.geometry(
-f'{window_width}x{window_height}+{position_right}+{position_top}')
+    f'{window_width}x{window_height}+{position_right}+{position_top}')
 
-container = Frame(root, bg="green")
+container = Frame(root, bg="black")
 container.pack(side="left", fill="both", expand=1)
 container.grid_columnconfigure(0, weight=1, pad=0)
 container.grid_columnconfigure(1, weight=1, pad=0)
 container.grid_columnconfigure(2, weight=1, pad=0)
-container.pack_forget()
 
-l = Label(container, text="sdfsdfsdfsdfsdf")
-l.pack()
-
-songService = Song_Service(callback)
+song_service = Song_Service(callback)
 
 source = Source_Service()
 
 bands = source.bands()
 songs = []
 
-painel = Painel(root, container, show_setup)
+painel = Painel(root, container, band_click)
 setup = Setup(container, bands, band_selected)
-#setup.redrawn()
-
+setup.redrawn()
 
 btnFrame = Frame(root)
-btnFrame.pack()
+btnFrame.pack(side=BOTTOM)
 
 songForwardButton = Button(btnFrame, text="Song >>",
-                           command=songForwardButton_click)
+                           command=song_forward_click)
 songForwardButton.pack()
 
 songBackwardButton = Button(btnFrame, text="Song <<",
-                            command=songBackwardButton_click)
+                            command=song_backward_click)
 songBackwardButton.pack()
 
 audioForwardButton = Button(btnFrame, text="Audio >>",
-                            command=audioForwardButton_click)
+                            command=audio_forward_click)
 audioForwardButton.pack()
 
-playButton = Button(btnFrame, text="Play", command=playButton_click)
+playButton = Button(btnFrame, text="Play", command=play_click)
 playButton.pack()
 
-stopButton = Button(btnFrame, text="Stop", command=stopButton_click)
+stopButton = Button(btnFrame, text="Stop", command=stop_click)
 stopButton.pack()
-
-screenBuild()
 
 root.mainloop()

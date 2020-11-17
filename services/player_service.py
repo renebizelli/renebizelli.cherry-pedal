@@ -24,7 +24,6 @@ class Player_Service:
         pygame.mixer.init()
         pygame.mixer.music.load(self._audio.file)
 
-
     def play(self):
 
         if pygame.mixer.music.get_busy():
@@ -46,18 +45,15 @@ class Player_Service:
         keepon = True
 
         for event in pygame.event.get():
-            print('event', event.type)
 
             if event.type == self._ends_by_play:
                 keepon = False
                 self._autoforward()
                 self._callback('AUDIO_ENDS')
-                print('song end event play')
 
             elif event.type == self._ends_by_stop:
                 keepon = False
                 self._callback('AUDIO_ENDS')
-                print('song end event by stop')
 
         if keepon:
             time.sleep(0.2)
