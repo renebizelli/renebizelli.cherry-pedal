@@ -9,7 +9,7 @@ class Song_Service:
         self._callback = callback
         self._songs = []
 
-    def set_songs(self, songs: [Song]):
+    def set_songs(self, songs: []):
         self._songs = songs
         self._index = 0
         self._audio_init_()
@@ -30,6 +30,8 @@ class Song_Service:
         self._audio_init_()
 
     def current(self):
+        if len(self._songs) == 0:
+            return None
         return self._songs[self._index]
 
     def forwardAudio(self):

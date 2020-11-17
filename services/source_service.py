@@ -35,19 +35,21 @@ class Source_Service:
             for audio in song['audios']:
 
                 file = self.__path_audio_file__(
-                    path, song['id'], audio['file'])
+                    path, band, song['id'], audio['file'])
 
                 audios.append(
                     Audio(audio['file'], audio['name'], file))
 
-                songs.append(Song(
-                    song['id'], song['name'], song['autoforward'], audios))
-
+            songs.append(Song(
+                song['id'], song['name'], song['autoforward'], audios))
+        
+        
         return songs
+
 
     def __load__(self):
         with io.open('source.json', 'r', encoding='utf-8-sig') as json_file:
             self._data = json.load(json_file)
 
-    def __path_audio_file__(self, path: str, song_id: str, file: str):
-        return "{}/{}/{}".format(path, song_id, file)
+    def __path_audio_file__(self, path: str, band: Band, song_id: str, file: str):
+        return "{}/{}/{}/{}".format(path, band.id, song_id, file)

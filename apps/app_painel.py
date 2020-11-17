@@ -5,26 +5,19 @@ from models.song import Song
 
 class Painel:
 
-    def __init__(self, root):
+    def __init__(self, root, container: tk.Frame, show_setup_event):
         self._root = root
+        self._container = container
+        self._show_setup_event = show_setup_event
         self._audios_widget = []
-        self._container = tk.Frame(
-            self._root, bg="gold")
-
-    def __container__(self):
-        self._container.pack(side="left", fill=tk.BOTH, expand=1)
-        self._container.grid_columnconfigure(0, weight=1, pad=0)
-        self._container.grid_columnconfigure(1, weight=1, pad=0)
-        self._container.grid_columnconfigure(2, weight=1, pad=0)
 
     def redrawn(self, song: Song, click_cherry):
-        self.__container__()
+        self._container.pack_forget()
         self.__band__()
         self.__song__(song)
         self.__audios__(song)
         self.__autoforward__(song)
         self.__cherry_button__(click_cherry)
-        pass
 
     def __band__(self):
         band_name = tk.StringVar()
@@ -37,6 +30,8 @@ class Painel:
         band_name_label.configure(
             bg="gray", fg="black", anchor="c", padx=0,
             pady=0, font=self.__font__(15))
+
+        band_name_label.bind("<Button-1>", self._show_setup_event)
 
     def __song__(self, song: Song):
         song_name_label = tk.Label(self._container, text=song.name)
@@ -95,32 +90,4 @@ class Painel:
                               bg="black", anchor="e")
         logo_label.bind("<Button-1>", click)
         logo_label.grid(row=3, column=2, sticky="sew", padx=70, pady=40)
-
-    def window_configure(self):
-
-        self._root.title('Cherry')
-        # self._root.overrideredirect(True)
-
-        # self._root.grid_columnconfigure(0, weight=1, pad=0)
-        # self._root.grid_columnconfigure(1, weight=1, pad=0)
-        # self._root.grid_columnconfigure(2, weight=1, pad=0)
-
-        window_width = 800
-        window_height = 400
-        self._root.geometry("{}x{}".format(window_width, window_height))
-       # self._root.resizable(False, False)
-
-        self._root.configure(bg='black', padx=0, pady=0)
-
-        screen_width = self._root.winfo_screenwidth()
-        screen_height = self._root.winfo_screenheight()
-        position_top = int(screen_height/2 - window_height/2)
-        position_right = int(screen_width / 2 - window_width/2)
-        self._root.geometry(
-            f'{window_width}x{window_height}+{position_right}+{position_top}')
-
-    def band_button(self, event):
-        pass
-
-    def __controls__(self):
-        pass
+ 

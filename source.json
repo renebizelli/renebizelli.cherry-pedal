@@ -1,5 +1,5 @@
 ﻿{
-  "path": "C:/inetpub/wwwroot/renebizelli.cherry-pedal/audios",
+  "path": "C:/inetpub/wwwroot/renebizelli.cherry-pedal/bands",
   "switches": {
     "song": 40,
     "audio": 38,
@@ -16,17 +16,19 @@
       "name": "Viva Hate"
     }
   ],
-  "viva-hate": {
-    "name": "How soon is now",
-    "id": "how-soon-is-now",
-    "autoforward": false,
-    "audios": [
-      {
-        "file": "how-soon-is-now_slide.wav",
-        "name": "Slide guitarra"
-      }
-    ]
-  },
+  "viva-hate": [
+    {
+      "name": "How soon is now",
+      "id": "how-soon-is-now",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "how-soon-is-now_slide.wav",
+          "name": "Slide guitarra"
+        }
+      ]
+    }
+  ],
   "super-bojo": [
     {
       "name": "Kaus Trem",

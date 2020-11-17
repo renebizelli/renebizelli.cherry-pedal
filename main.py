@@ -30,10 +30,10 @@ def playButton_click():
 def stopButton_click():
     songService.stop()
 
-
 def screenBuild():
     song = songService.current()
-    painel.redrawn(song, end_app)
+    if song is not None:
+        painel.redrawn(song, end_app)
 
 
 def callback(command):
@@ -42,31 +42,52 @@ def callback(command):
     elif command == 'AUDIO_ENDS':
         screenBuild()
 
-
-def end_app(a):
+def end_app(args):
     exit()
-
 
 def band_selected(band: Band):
     songs = source.songs(band)
     songService.set_songs(songs)
-    print("select band", band)
+    screenBuild()
 
+def show_setup(args):
+    setup.redrawn()
 
 root = Tk()
+root.title('Cherry')
+# self._root.overrideredirect(True)
+window_width = 800
+window_height = 400
+root.geometry("{}x{}".format(window_width, window_height))
+# self._root.resizable(False, False)
+root.configure(bg='black', padx=0, pady=0)
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+position_top = int(screen_height/2 - window_height/2)
+position_right = int(screen_width / 2 - window_width/2)
+root.geometry(
+f'{window_width}x{window_height}+{position_right}+{position_top}')
+
+container = Frame(root, bg="green")
+container.pack(side="left", fill="both", expand=1)
+container.grid_columnconfigure(0, weight=1, pad=0)
+container.grid_columnconfigure(1, weight=1, pad=0)
+container.grid_columnconfigure(2, weight=1, pad=0)
+container.pack_forget()
+
+l = Label(container, text="sdfsdfsdfsdfsdf")
+l.pack()
 
 songService = Song_Service(callback)
 
-painel = Painel(root)
-
-painel.window_configure()
 source = Source_Service()
 
 bands = source.bands()
 songs = []
 
-setup = Setup(root, bands, band_selected)
-setup.redrawn()
+painel = Painel(root, container, show_setup)
+setup = Setup(container, bands, band_selected)
+#setup.redrawn()
 
 
 btnFrame = Frame(root)
