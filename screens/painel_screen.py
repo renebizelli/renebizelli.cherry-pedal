@@ -4,10 +4,10 @@ from models.song import Song
 from models.band import Band
 from services.song_service import Song_Service
 import keyboard
-from apps.app_base import AppBase
+from screens.base_screen import Base_Screen
 
 
-class Painel(AppBase):
+class Painel_Screen(Base_Screen):
 
     def __init__(self, root, setup_drawn_event):
         self._root = root
@@ -19,18 +19,17 @@ class Painel(AppBase):
 
         self._container = Frame(self._root)
 
-    def set_app_to_destroy(self, app_to_destroy: AppBase):
-        self._app_to_destroy = app_to_destroy
+    def set_screen_to_destroy(self, screen_to_destroy: Base_Screen):
+        self._screen_to_destroy = screen_to_destroy
 
     def redrawn(self, band: Band, songs: []):
 
-        self._app_to_destroy.destroy()
-
-        self._container = self.get_container()
-
+        self._screen_to_destroy.destroy()
         self._song_service.set_songs(songs)
+
         current_song = self._song_service.current()
         if current_song is not None:
+            self.__container_drawn__()
             self.__band_drawn__(band)
             self.__song_drawn__(current_song)
             self.__audios_drawn__(current_song)
@@ -43,12 +42,20 @@ class Painel(AppBase):
         self._container.destroy()
         keyboard.unhook_all()
 
+    def __container_drawn__(self):
+        self._container = Frame(self._root, bg="black")
+        self._container.pack(side="left", fill="both", expand=True)
+        self._container.grid_columnconfigure(0, weight=1, pad=0, minsize=300)
+        self._container.grid_columnconfigure(1, weight=1, pad=0, minsize=300)
+        self._container.grid_columnconfigure(2, weight=1, pad=0, minsize=200)
+
     def __keyboards__(self):
         keyboard.on_press_key('down arrow', self.__audio_forward_click__)
         keyboard.on_press_key('left arrow', self.__song_backward_click__)
         keyboard.on_press_key('right arrow', self.__song_forward_click__)
         keyboard.on_press_key('space', self.__play_click__)
         keyboard.on_press_key('esc', self.__stop_click__)
+        keyboard.on_press_key('f1', self._setup_drawn_event)
 
     def __band_drawn__(self, band: Band):
         band_name_label = Label(
@@ -58,8 +65,6 @@ class Painel(AppBase):
             padx=0, pady=0, ipadx=0, ipady=0)
         band_name_label.configure(
             bg="gray", fg="black", anchor="center", font=self.__font__(15))
-
-        band_name_label.bind("<Button-1>", self._setup_drawn_event)
 
     def __song_drawn__(self, song: Song):
         song_name_label = Label(self._container,
@@ -105,7 +110,7 @@ class Painel(AppBase):
             self._container, text="PLAYING", bg="black", fg="black",
             anchor="center",  font=self.__font__(15), pady=0)
         self._play_indicator_label.grid(
-            row=3, column=2, sticky="ew", padx=0, pady=10, ipadx=0, ipady=0)
+            row=3, column=2, sticky="ew", padx=5, pady=10, ipadx=0, ipady=0)
 
     def __play_indicator__(self, status: bool):
         self._play_indicator_status = status
@@ -136,14 +141,11 @@ class Painel(AppBase):
         else:
             label.configure(fg="yellow", bg="black")
 
-    def __end__(self, args):
-        exit()
-
     def __cherry_drawn__(self):
         img = Image.open("assets/cherry.jpg")
-        self._root.logo = ImageTk.PhotoImage(img.resize((94, 220)))
-        logo_label = Label(self._container, image=self._root.logo, bd=0,
-                           bg="black",  anchor="center",  borderwidth=1)
+        self._root.cherry = ImageTk.PhotoImage(img.resize((94, 220)))
+        logo_label = Label(self._container, image=self._root.cherry, bd=0,
+                           bg="black",  anchor="center")
         logo_label.bind("<Button-1>", self.__end__)
         logo_label.grid(row=4, column=2, sticky="ew", padx=0, pady=0)
 
@@ -188,3 +190,6 @@ class Painel(AppBase):
             print("End")
 
         self.__audio_changed__()
+
+    def __end__(self, args):
+        exit()

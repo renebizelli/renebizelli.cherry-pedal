@@ -1,21 +1,8 @@
 from tkinter import *
-from models.song import Song
-from models.audio import Audio
 from models.band import Band
 from services.source_service import Source_Service
-from apps.app_painel import Painel
-from apps.app_setup import Setup
-
-
-def band_selected(band: Band):
-    print(">>>", band)
-    songs = source.songs(band)
-    painel.redrawn(band, songs)
-
-
-def band_click(args):
-    setup.redrawn()
-
+from screens.painel_screen import Painel_Screen
+from screens.setup_screen import Setup_Screen
 
 root = Tk()
 root.title('Cherry')
@@ -32,15 +19,24 @@ position_right = int(screen_width / 2 - window_width/2)
 root.geometry(
     f'{window_width}x{window_height}+{position_right}+{position_top}')
 
-source = Source_Service()
 
+def band_selected(band: Band):
+    songs = source.songs(band)
+    painel.redrawn(band, songs)
+
+
+def band_click(args):
+    setup.redrawn()
+
+
+source = Source_Service()
 bands = source.bands()
 
-painel = Painel(root, band_click)
-setup = Setup(root, bands, band_selected)
+painel = Painel_Screen(root, band_click)
+setup = Setup_Screen(root, bands, band_selected)
 
-painel.set_app_to_destroy(setup)
-setup.set_app_to_destroy(painel)
+painel.set_screen_to_destroy(setup)
+setup.set_screen_to_destroy(painel)
 
 setup.redrawn()
 
