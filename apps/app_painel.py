@@ -2,30 +2,55 @@ from tkinter import Frame, Label, Widget
 from PIL import ImageTk, Image
 from models.song import Song
 from models.band import Band
+from services.song_service import Song_Service
+import keyboard
+from apps.app_base import AppBase
 
 
-class Painel:
+class Painel(AppBase):
 
-    def __init__(self, root, container: Frame, show_setup_event):
+    def __init__(self, root, setup_drawn_event):
         self._root = root
-        self._container = container
-        self._show_setup_event = show_setup_event
+        self._setup_drawn_event = setup_drawn_event
+
         self._audios_widget = []
         self._play_indicator_status = False
+        self._song_service = Song_Service(self.__callback__)
 
-    def redrawn(self, band: Band, song: Song):
+        self._container = Frame(self._root)
 
-        for w in self._container.winfo_children():
-            w.destroy()
+    def set_app_to_destroy(self, app_to_destroy: AppBase):
+        self._app_to_destroy = app_to_destroy
 
-        self.band_drawn(band)
-        self.song_drawn(song)
-        self.audios_drawn(song)
-        self.autoforward_drawn(song)
-        self.__play_indicator_drawn__()
-        self.__cherry_drawn__()
+    def redrawn(self, band: Band, songs: []):
 
-    def band_drawn(self, band: Band):
+        self._app_to_destroy.destroy()
+
+        self._container = self.get_container()
+
+        self._song_service.set_songs(songs)
+        current_song = self._song_service.current()
+        if current_song is not None:
+            self.__band_drawn__(band)
+            self.__song_drawn__(current_song)
+            self.__audios_drawn__(current_song)
+            self.__autoforward_drawn__(current_song)
+            self.__play_indicator_drawn__()
+            self.__cherry_drawn__()
+            self.__keyboards__()
+
+    def destroy(self):
+        self._container.destroy()
+        keyboard.unhook_all()
+
+    def __keyboards__(self):
+        keyboard.on_press_key('down arrow', self.__audio_forward_click__)
+        keyboard.on_press_key('left arrow', self.__song_backward_click__)
+        keyboard.on_press_key('right arrow', self.__song_forward_click__)
+        keyboard.on_press_key('space', self.__play_click__)
+        keyboard.on_press_key('esc', self.__stop_click__)
+
+    def __band_drawn__(self, band: Band):
         band_name_label = Label(
             self._container, text=band.name.upper(), anchor="nw")
         band_name_label.grid(
@@ -34,9 +59,9 @@ class Painel:
         band_name_label.configure(
             bg="gray", fg="black", anchor="center", font=self.__font__(15))
 
-        band_name_label.bind("<Button-1>", self._show_setup_event)
+        band_name_label.bind("<Button-1>", self._setup_drawn_event)
 
-    def song_drawn(self, song: Song):
+    def __song_drawn__(self, song: Song):
         song_name_label = Label(self._container,
                                 text=song.name.upper(),
                                 fg="black", bg="gold",
@@ -44,7 +69,7 @@ class Painel:
         song_name_label.grid(
             row=1, column=0, columnspan=3, sticky="new", padx=0, pady=0)
 
-    def audios_drawn(self, song: Song):
+    def __audios_drawn__(self, song: Song):
 
         for widget in self._audios_widget:
             widget.destroy()
@@ -64,7 +89,7 @@ class Painel:
             label.pack(fill="both", expand=True)
             self._audios_widget.append(label)
 
-    def autoforward_drawn(self,  song: Song):
+    def __autoforward_drawn__(self,  song: Song):
         mode = 'AUTO' if song.autoforward else 'MANUAL'
         song_auto_forward_label = Label(
             self._container, text=mode, bg="darkgreen", fg="white",
@@ -82,7 +107,7 @@ class Painel:
         self._play_indicator_label.grid(
             row=3, column=2, sticky="ew", padx=0, pady=10, ipadx=0, ipady=0)
 
-    def play_indicator(self, status: bool):
+    def __play_indicator__(self, status: bool):
         self._play_indicator_status = status
         self.__play_blinker__(status)
 
@@ -121,3 +146,45 @@ class Painel:
                            bg="black",  anchor="center",  borderwidth=1)
         logo_label.bind("<Button-1>", self.__end__)
         logo_label.grid(row=4, column=2, sticky="ew", padx=0, pady=0)
+
+    def __song_forward_click__(self, args):
+        self._song_service.forward()
+        self.__song_changed__()
+
+    def __song_backward_click__(self, args):
+        self._song_service.backward()
+        self.__song_changed__()
+
+    def __song_changed__(self):
+        self.__play_indicator__(False)
+        current_song = self._song_service.current()
+        if current_song is not None:
+            self.__song_drawn__(current_song)
+            self.__autoforward_drawn__(current_song)
+            self.__audios_drawn__(current_song)
+
+    def __audio_forward_click__(self, args):
+        self._song_service.forwardAudio()
+        self.__play_indicator__(False)
+        self.__audio_changed__()
+
+    def __audio_changed__(self):
+        current_song = self._song_service.current()
+        if current_song is not None:
+            self.__audios_drawn__(current_song)
+
+    def __play_click__(self, args):
+        self._song_service.play()
+
+    def __stop_click__(self, args):
+        self._song_service.stop()
+
+    def __callback__(self, command):
+        if command == 'AUDIO_STARTS':
+            self.__play_indicator__(True)
+            print("Start")
+        elif command == 'AUDIO_ENDS':
+            self.__play_indicator__(False)
+            print("End")
+
+        self.__audio_changed__()
