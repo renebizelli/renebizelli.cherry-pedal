@@ -6,14 +6,15 @@ from services.song_service import Song_Service
 from services.source_service import Source_Service
 from apps.app_painel import Painel
 from apps.app_setup import Setup
+import keyboard
 
 
-def song_forward_click():
+def song_forward_click(args):
     song_service.forward()
     song_changed()
 
 
-def song_backward_click():
+def song_backward_click(args):
     song_service.backward()
     song_changed()
 
@@ -27,7 +28,7 @@ def song_changed():
         painel.audios_drawn(song_current)
 
 
-def audio_forward_click():
+def audio_forward_click(args):
     song_service.forwardAudio()
     painel.play_indicator(False)
     audio_changed()
@@ -39,11 +40,11 @@ def audio_changed():
         painel.audios_drawn(song_current)
 
 
-def play_click():
+def play_click(args):
     song_service.play()
 
 
-def stop_click():
+def stop_click(args):
     song_service.stop()
 
 
@@ -87,10 +88,10 @@ root.geometry(
     f'{window_width}x{window_height}+{position_right}+{position_top}')
 
 container = Frame(root, bg="black")
-container.pack(side="left", fill="both", expand=1)
-container.grid_columnconfigure(0, weight=1, pad=0)
-container.grid_columnconfigure(1, weight=1, pad=0)
-container.grid_columnconfigure(2, weight=1, pad=0)
+container.pack(side="left", fill="both", expand=True)
+container.grid_columnconfigure(0, weight=1, pad=0, minsize=300)
+container.grid_columnconfigure(1, weight=1, pad=0, minsize=300)
+container.grid_columnconfigure(2, weight=1, pad=0, minsize=200)
 
 song_service = Song_Service(callback)
 
@@ -103,25 +104,10 @@ painel = Painel(root, container, band_click)
 setup = Setup(root, container, bands, band_selected)
 setup.redrawn()
 
-btnFrame = Frame(root)
-btnFrame.pack(side=BOTTOM)
-
-songForwardButton = Button(btnFrame, text="Song >>",
-                           command=song_forward_click)
-songForwardButton.pack()
-
-songBackwardButton = Button(btnFrame, text="Song <<",
-                            command=song_backward_click)
-songBackwardButton.pack()
-
-audioForwardButton = Button(btnFrame, text="Audio >>",
-                            command=audio_forward_click)
-audioForwardButton.pack()
-
-playButton = Button(btnFrame, text="Play", command=play_click)
-playButton.pack()
-
-stopButton = Button(btnFrame, text="Stop", command=stop_click)
-stopButton.pack()
+keyboard.on_press_key('down arrow', audio_forward_click)
+keyboard.on_press_key('left arrow', song_backward_click)
+keyboard.on_press_key('right arrow', song_forward_click)
+keyboard.on_press_key('space', play_click)
+keyboard.on_press_key('esc', stop_click)
 
 root.mainloop()

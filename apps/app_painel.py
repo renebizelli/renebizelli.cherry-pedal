@@ -23,7 +23,7 @@ class Painel:
         self.audios_drawn(song)
         self.autoforward_drawn(song)
         self.__play_indicator_drawn__()
-        self.__cherry_button__()
+        self.__cherry_drawn__()
 
     def band_drawn(self, band: Band):
         band_name_label = Label(
@@ -51,7 +51,7 @@ class Painel:
 
         self._audios_widget.clear()
 
-        audios_frame = Frame(self._container, bg="red", width=100)
+        audios_frame = Frame(self._container, bg="black")
         audios_frame.grid(row=2, column=0, columnspan=2,
                           rowspan=3, sticky="new")
 
@@ -61,16 +61,16 @@ class Painel:
             label = Label(audios_frame, text=audio.name.upper())
             self.__audio_item_format__(label, audio.selected)
             label.place(x=0, y=i+10)
-            label.pack(fill="both")
+            label.pack(fill="both", expand=True)
             self._audios_widget.append(label)
 
     def autoforward_drawn(self,  song: Song):
         mode = 'AUTO' if song.autoforward else 'MANUAL'
         song_auto_forward_label = Label(
             self._container, text=mode, bg="darkgreen", fg="white",
-            width=20, anchor="center",  font=self.__font__(15))
+            anchor="center",  font=self.__font__(15))
         song_auto_forward_label.grid(
-            row=2, column=2, sticky="e", padx=0, pady=0, ipadx=0, ipady=0)
+            row=2, column=2, sticky="ew", padx=5, pady=0, ipadx=0, ipady=0)
 
     def __play_indicator_drawn__(self):
 
@@ -78,9 +78,9 @@ class Painel:
 
         self._play_indicator_label = Label(
             self._container, text="PLAYING", bg="black", fg="black",
-            width=20, anchor="center",  font=self.__font__(15), pady=0)
+            anchor="center",  font=self.__font__(15), pady=0)
         self._play_indicator_label.grid(
-            row=3, column=2, sticky="e", padx=0, pady=10, ipadx=0, ipady=0)
+            row=3, column=2, sticky="ew", padx=0, pady=10, ipadx=0, ipady=0)
 
     def play_indicator(self, status: bool):
         self._play_indicator_status = status
@@ -114,10 +114,10 @@ class Painel:
     def __end__(self, args):
         exit()
 
-    def __cherry_button__(self):
+    def __cherry_drawn__(self):
         img = Image.open("assets/cherry.jpg")
-        self._root.logo = ImageTk.PhotoImage(img.resize((77, 180)))
+        self._root.logo = ImageTk.PhotoImage(img.resize((94, 220)))
         logo_label = Label(self._container, image=self._root.logo, bd=0,
-                           bg="black",   anchor="center")
+                           bg="black",  anchor="center",  borderwidth=1)
         logo_label.bind("<Button-1>", self.__end__)
-        logo_label.grid(row=4, column=2, sticky="e", padx=70, pady=40)
+        logo_label.grid(row=4, column=2, sticky="ew", padx=0, pady=0)
