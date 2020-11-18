@@ -59,6 +59,7 @@ def callback(command):
 
 
 def band_selected(band: Band):
+    print(">>>", band)
     songs = source.songs(band)
     song_service.set_songs(songs)
     song_current = song_service.current()
@@ -99,7 +100,7 @@ bands = source.bands()
 songs = []
 
 painel = Painel(root, container, band_click)
-setup = Setup(container, bands, band_selected)
+setup = Setup(root, container, bands, band_selected)
 setup.redrawn()
 
 btnFrame = Frame(root)

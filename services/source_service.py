@@ -18,7 +18,7 @@ class Source_Service:
         bands = []
 
         for band in self._data['bands']:
-            bands.append(Band(band['id'], band['name']))
+            bands.append(Band(band['id'], band['name'], band['logo']))
 
         return bands
 

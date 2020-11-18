@@ -9,11 +9,13 @@
   "bands": [
     {
       "id": "super-bojo",
-      "name": "Super Bojo"
+      "name": "Super Bojo",
+      "logo" : true
     },
     {
       "id": "viva-hate",
-      "name": "Viva Hate"
+      "name": "Viva Hate",
+      "logo" : true
     }
   ],
   "viva-hate": [
