@@ -8,6 +8,7 @@ class Song_Service:
         self._index = 0
         self._callback = callback
         self._songs = []
+        self._audioService = None
 
     def set_songs(self, songs: []):
         self._songs = songs
@@ -16,6 +17,11 @@ class Song_Service:
 
     def _audio_init_(self):
         song = self.current()
+        print("_audio_init_", song.name)
+        
+        if not self._audioService == None:
+            self._audioService.stop()
+        
         self._audioService = Audio_Service(song, self._callback)
 
     def forward(self):
@@ -35,6 +41,7 @@ class Song_Service:
         return self._songs[self._index]
 
     def forwardAudio(self):
+        print("forwardAudio")        
         self._audioService.forward()
 
     def currentAudio(self):

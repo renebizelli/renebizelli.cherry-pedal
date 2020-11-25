@@ -2,19 +2,18 @@ from models.audio import Audio
 from models.song import Song
 from services.player_service import Player_Service
 
-
 class Audio_Service:
 
     def __init__(self, song: Song, callback):
         self._song = song
         self._index = 0
         self._callback = callback
+        self._player = None
+        
         self.__selected__()
 
     def forward(self):
         
-        print("index:", self._index)
-
         self._index = self._index+1
 
         self._index = 0 if self._index == len(
@@ -22,7 +21,7 @@ class Audio_Service:
 
         self.__selected__()
 
-    def current(self):
+    def current(self) -> Audio :
         return self._song.audios[self._index]
 
     def play(self):
@@ -32,12 +31,15 @@ class Audio_Service:
         self._player.stop()
 
     def autoforward(self):
-        print('# auto')
         if self._song.autoforward:
             self.forward()
 
     def __selected__(self):
         current = self.current()
+
+        if self._player != None:
+            self._player.stop()
+        
         self._player = Player_Service(
             current, self._callback, self.autoforward)
         for audio in self._song.audios:

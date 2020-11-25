@@ -5,7 +5,7 @@ from models.band import Band
 from services.song_service import Song_Service
 import keyboard
 from screens.base_screen import Base_Screen
-
+from threading import Timer
 
 class Painel_Screen(Base_Screen):
 
@@ -157,15 +157,21 @@ class Painel_Screen(Base_Screen):
         self._song_service.backward()
         self.__song_changed__()
 
-    def __song_changed__(self):
+            
+    def __song_changed_after__(self):
         self.__play_indicator__(False)
         current_song = self._song_service.current()
         if current_song is not None:
             self.__song_drawn__(current_song)
             self.__autoforward_drawn__(current_song)
             self.__audios_drawn__(current_song)
+            
+    def __song_changed__(self):
+        r = Timer(0.5, self.__song_changed_after__)
+        r.start()
 
     def __audio_forward_click__(self, args):
+        print("__audio_forward_click__")
         self._song_service.forwardAudio()
         self.__play_indicator__(False)
         self.__audio_changed__()
@@ -182,15 +188,14 @@ class Painel_Screen(Base_Screen):
         self._song_service.stop()
 
     def __callback__(self, command):
-        print(">>>>", command)
+        
+        print("callback:", command)
+
         if command == 'AUDIO_STARTS':
             self.__play_indicator__(True)
-            print("Start!")
         elif command == 'AUDIO_ENDS':
             self.__play_indicator__(False)
-            print("End!")
-
-        self.__audio_changed__()
+            self.__audio_changed__()
 
     def __end__(self, args):
         exit()

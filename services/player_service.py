@@ -19,7 +19,6 @@ class Player_Service:
             self._callback('AUDIO_NOT_FOUND')
             raise Exception("Audio resource " + audio.file + " not found")
 
-
         pygame.init()
         pygame.mixer.init()
         pygame.mixer.music.load(self._audio.file)
@@ -39,7 +38,6 @@ class Player_Service:
 
 
     def play(self):
-        print('# play')
         if pygame.mixer.music.get_busy():
             self.stop()
         
@@ -50,7 +48,6 @@ class Player_Service:
         self._callback('AUDIO_STARTS')
 
     def stop(self):
-        print('# stop')
         self.__set_end__(self._end_by_stop)
         pygame.mixer.music.stop()
         # pygame.mixer.music.unload()
@@ -62,8 +59,6 @@ class Player_Service:
         
         while keepon:
             keepon = pygame.mixer.music.get_busy()
-
-        print('# acabou', self._end)
 
         if self.__end_compare_by_play__():
             self._autoforward()
