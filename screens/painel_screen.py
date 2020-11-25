@@ -182,12 +182,13 @@ class Painel_Screen(Base_Screen):
         self._song_service.stop()
 
     def __callback__(self, command):
+        print(">>>>", command)
         if command == 'AUDIO_STARTS':
             self.__play_indicator__(True)
-            print("Start")
+            print("Start!")
         elif command == 'AUDIO_ENDS':
             self.__play_indicator__(False)
-            print("End")
+            print("End!")
 
         self.__audio_changed__()
 

@@ -12,6 +12,8 @@ class Audio_Service:
         self.__selected__()
 
     def forward(self):
+        
+        print("index:", self._index)
 
         self._index = self._index+1
 
@@ -30,6 +32,7 @@ class Audio_Service:
         self._player.stop()
 
     def autoforward(self):
+        print('# auto')
         if self._song.autoforward:
             self.forward()
 
