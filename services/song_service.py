@@ -17,8 +17,6 @@ class Song_Service:
 
     def _audio_init_(self):
         song = self.current()
-        print("_audio_init_", song.name)
-        
         if not self._audioService == None:
             self._audioService.stop()
         
@@ -41,7 +39,6 @@ class Song_Service:
         return self._songs[self._index]
 
     def forwardAudio(self):
-        print("forwardAudio")        
         self._audioService.forward()
 
     def currentAudio(self):

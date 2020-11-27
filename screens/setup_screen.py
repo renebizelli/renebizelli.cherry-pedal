@@ -5,18 +5,23 @@ from tkinter import Label, Frame
 from models.band import Band
 from screens.base_screen import Base_Screen
 import keyboard
-
+import threading
+import RPi.GPIO as gpio
 
 class Setup_Screen(Base_Screen):
 
     def __init__(self, root, bands, band_selected):
-        self._root = root
+        
+        super().__init__(root)        
+        
         self._bands = bands
         self._index_selected = 0
 
         self._band_selector_widget = []
 
         self._band_selected = band_selected
+        
+        print(self._app_on)
 
     def set_screen_to_destroy(self, screen_to_destroy: Base_Screen):
         self._screen_to_destroy = screen_to_destroy
@@ -31,10 +36,38 @@ class Setup_Screen(Base_Screen):
         self.__band_selector_drawn__()
         self.__keyboards__()
         self.__cherry_drawn__()
+        
+        self._gpio_thread = threading.Thread(target=self.__gpio__, daemon=True)            
+        self._gpio_thread.start()         
 
     def destroy(self):
+        self._app_on = False
         self._container.destroy()
         keyboard.unhook_all()
+                
+
+    def __gpio__(self):
+        
+        self.gpio_init()
+        
+        button_band_forward = 17 # yellow
+        button_selector = 22 #brown
+        
+        self.gpio_add_buttom(button_band_forward)
+        self.gpio_add_buttom(button_selector)
+        self.gpio_set_event()
+        
+        while self._app_on:
+            
+            if gpio.event_detected(button_band_forward):
+                self.__band_forward_click__(None)
+                
+            elif gpio.event_detected(button_selector):
+                self.gpio_destroy()
+                self.__selector_click__(None)                 
+                
+        self.gpio_destroy()
+        
 
     def __container_drawn__(self):
         self._container = Frame(self._root, bg="black")
@@ -99,6 +132,7 @@ class Setup_Screen(Base_Screen):
         self._band_selected(band)
 
     def __end__(self, args):
+        self._app_on = False
         exit()
 
     def __keyboards__(self):
