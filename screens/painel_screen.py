@@ -55,12 +55,12 @@ class Painel_Screen(Base_Screen):
         
         self.gpio_init()        
         
-        button_song_backward = 17 # yellow
-        button_play = 22 #brown
-        button_stop = 23 #red
+        button_song_backward = 17 # roxo
+        button_play = 22 #azul
+        button_stop = 23 #amarelo
         button_song_forward = 24 #orange
         button_setup = 4 # white
-        button_audio_forward = 27 #black
+        button_audio_forward = 27 #vermelho (confirmar)
         
         self.gpio_add_buttom(button_song_backward)
         self.gpio_add_buttom(button_play)
