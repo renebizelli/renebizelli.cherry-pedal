@@ -50,8 +50,8 @@ class Setup_Screen(Base_Screen):
         
         self.gpio_init()
         
-        button_band_forward = 17 # yellow
-        button_selector = 22 #brown
+        button_band_forward = 17 # roxo
+        button_selector = 22 #azul
         
         self.gpio_add_buttom(button_band_forward)
         self.gpio_add_buttom(button_selector)
