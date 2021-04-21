@@ -22,7 +22,7 @@ class Player_Service:
         pygame.init()
         pygame.mixer.init()
         pygame.mixer.music.load(self._audio.file)
-               
+        pygame.mixer.music.set_volume(1.0)
 
     def __set_end__(self, code:int):
         self._end = code

@@ -28,45 +28,49 @@ class Painel_Screen(Base_Screen):
         
     def set_screen_to_destroy(self, screen_to_destroy: Base_Screen):
         self._screen_to_destroy = screen_to_destroy
+        
+    def __redrawn__(self, band: Band, current_song: Song):
+                
+        self.__container_drawn__()
+        self.__band_drawn__(band)
+        self.__song_drawn__(current_song)
+        self.__audios_drawn__(current_song)
+        self.__autoforward_drawn__(current_song)
+        self.__play_indicator_drawn__()
+        self.__cherry_drawn__()
+        self.__keyboards__()
+
+        self._song_changed_bounce_control = True
+
+        self._gpio_thread = threading.Thread(target=self.__gpio__, daemon=True)            
+        self._gpio_thread.start() 
 
     def redrawn(self, band: Band, songs: []):
-
+        
         self._screen_to_destroy.destroy()
         self._song_service.set_songs(songs)
-
         current_song = self._song_service.current()
         
         if current_song is not None:
-            self.__container_drawn__()
-            self.__band_drawn__(band)
-            self.__song_drawn__(current_song)
-            self.__audios_drawn__(current_song)
-            self.__autoforward_drawn__(current_song)
-            self.__play_indicator_drawn__()
-            self.__cherry_drawn__()
-            self.__keyboards__()
-            
-            self._song_changed_bounce_control = True
-            
-            self._gpio_thread = threading.Thread(target=self.__gpio__, daemon=True)            
-            self._gpio_thread.start() 
+
+            r = Timer(1, self.__redrawn__, [band, current_song])
+            r.start()           
+
 
     def __gpio__(self):
         
         self.gpio_init()        
         
-        button_song_backward = 17 # yellow
-        button_play = 22 #brown
-        button_stop = 23 #red
+        button_song_backward = 17 # roxo
+        button_play = 22 #azul
+        button_stop = 23 #amarelo
         button_song_forward = 24 #orange
-        button_setup = 4 # white
-        button_audio_forward = 27 #black
+        button_audio_forward = 27 #vermelho (confirmar)
         
         self.gpio_add_buttom(button_song_backward)
         self.gpio_add_buttom(button_play)
         self.gpio_add_buttom(button_stop)
         self.gpio_add_buttom(button_song_forward)
-        self.gpio_add_buttom(button_setup)
         self.gpio_add_buttom(button_audio_forward)
         self.gpio_set_event()        
         
@@ -87,15 +91,11 @@ class Painel_Screen(Base_Screen):
             elif gpio.event_detected(button_song_backward):
                 self.__song_backward_click__(None)                  
 
-            elif gpio.event_detected(button_setup):
-                self.gpio_destroy()
-                self.__setup_drawn_click__(None)            
-        
         self.gpio_destroy()
 
     def destroy(self):
-        self._app_on = False
         self._container.destroy()
+        self._app_on = False
         keyboard.unhook_all()
 
     def __container_drawn__(self):
@@ -178,17 +178,22 @@ class Painel_Screen(Base_Screen):
         self.__play_blinker__(status)
 
     def __play_blinker__(self, on: bool):
+        
+        try:
 
-        bg = "darkred" if on else "black"
-        fg = "white" if on else "black"
-        on = not on
+            bg = "darkred" if on else "black"
+            fg = "white" if on else "black"
+            on = not on
 
-        if self._play_indicator_status:
-            self._play_indicator_label.configure(bg=bg, fg=fg)
-            self._play_indicator_label.after(
-                500, lambda: self.__play_blinker__(on))
-        else:
-            self._play_indicator_label.configure(bg="black", fg="black")
+            if self._play_indicator_status:
+                self._play_indicator_label.configure(bg=bg, fg=fg)
+                self._play_indicator_label.after(
+                    500, lambda: self.__play_blinker__(on))
+            else:
+                self._play_indicator_label.configure(bg="black", fg="black")
+
+        except:
+            print("Erro ao gerar blinker")
 
     def __font__(self, fontSize):
         return ("Helvetica", fontSize)

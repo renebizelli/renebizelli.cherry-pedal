@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from tkinter import *
 from models.band import Band
 from services.source_service import Source_Service
