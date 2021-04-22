@@ -11,7 +11,13 @@ root.title('Cherry')
 # self._root.overrideredirect(True)
 window_width = 800
 window_height = 400
+
 root.geometry("{}x{}".format(window_width, window_height))
+
+root.attributes('-fullscreen', True)  
+root.fullScreenState = False
+
+
 # self._root.resizable(False, False)
 root.configure(bg='black', padx=0, pady=0)
 screen_width = root.winfo_screenwidth()
