@@ -20,6 +20,17 @@
   ],
   "viva-hate": [
     {
+      "name": "Introdução show",
+      "id": "introducao",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "bands_viva-hate_show_introducao.wav",
+          "name": "áudio"
+        }
+      ]
+    },    
+    {
       "name": "How soon is now",
       "id": "how-soon-is-now",
       "autoforward": false,
@@ -29,7 +40,18 @@
           "name": "Slide guitarra"
         }
       ]
-    }
+    },
+    {
+      "name": "Final show",
+      "id": "final",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "bands_viva-hate_show_final.wav",
+          "name": "áudio"
+        }
+      ]
+    },   
   ],
   "super-bojo": [
     {
