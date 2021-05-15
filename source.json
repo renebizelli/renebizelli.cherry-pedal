@@ -25,8 +25,8 @@
       "autoforward": false,
       "audios": [
         {
-          "file": "bands_viva-hate_show_introducao.wav",
-          "name": "áudio"
+          "file": "introducao.wav",
+          "name": "audio"
         }
       ]
     },    
@@ -47,11 +47,11 @@
       "autoforward": false,
       "audios": [
         {
-          "file": "bands_viva-hate_show_final.wav",
+          "file": "final.wav",
           "name": "áudio"
         }
       ]
-    },   
+    }   
   ],
   "super-bojo": [
     {
