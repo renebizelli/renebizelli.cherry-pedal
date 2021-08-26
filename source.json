@@ -20,8 +20,19 @@
   ],
   "viva-hate": [
     {
-      "name": "Introdução show",
-      "id": "introducao",
+      "name": "Introdução show - 1",
+      "id": "introducao-1",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "introducao.wav",
+          "name": "audio"
+        }
+      ]
+    },  
+    {
+      "name": "Introdução show - 2",
+      "id": "introducao-2",
       "autoforward": false,
       "audios": [
         {
@@ -30,6 +41,28 @@
         }
       ]
     },    
+    {
+      "name": "Speedway",
+      "id": "speedway",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "serra.wav",
+          "name": "serra"
+        }
+      ]
+    },
+    {
+      "name": "Back on the chain",
+      "id": "back-on-the-chain-gang",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "introducao.wav",
+          "name": "introducao"
+        }
+      ]
+    },
     {
       "name": "How soon is now",
       "id": "how-soon-is-now",
@@ -48,7 +81,7 @@
       "audios": [
         {
           "file": "final.wav",
-          "name": "áudio"
+          "name": "audio"
         }
       ]
     }   
