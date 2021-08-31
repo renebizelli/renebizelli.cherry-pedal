@@ -64,6 +64,17 @@
       ]
     }, 
     {
+      "name": "Speedway",
+      "id": "speedway",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "serra.wav",
+          "name": "serra"
+        }
+      ]
+    },    
+    {
       "name": "Final show",
       "id": "final",
       "autoforward": false,
