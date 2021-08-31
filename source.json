@@ -42,14 +42,14 @@
       ]
     },    
     {
-      "name": "Speedway",
-      "id": "speedway",
+      "name": "How soon is now",
+      "id": "how-soon-is-now",
       "autoforward": false,
       "audios": [
         {
-          "file": "serra.wav",
-          "name": "serra"
-        }
+          "file": "how-soon-is-now_slide.wav",
+          "name": "Slide guitarra"
+        } 
       ]
     },
     {
@@ -62,18 +62,7 @@
           "name": "introducao"
         }
       ]
-    },
-    {
-      "name": "How soon is now",
-      "id": "how-soon-is-now",
-      "autoforward": false,
-      "audios": [
-        {
-          "file": "how-soon-is-now_slide.wav",
-          "name": "Slide guitarra"
-        } 
-      ]
-    },
+    }, 
     {
       "name": "Final show",
       "id": "final",
