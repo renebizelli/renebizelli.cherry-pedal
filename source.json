@@ -75,6 +75,17 @@
       ]
     },    
     {
+      "name": "Hand in Glove",
+      "id": "hand-in-glove",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "gaita.wav",
+          "name": "Gaita"
+        }
+      ]
+    },  
+    {
       "name": "Final show",
       "id": "final",
       "autoforward": false,
