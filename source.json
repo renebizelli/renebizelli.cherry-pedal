@@ -95,7 +95,18 @@
           "name": "audio"
         }
       ]
-    }   
+    },  
+    {
+      "name": "Asleep",
+      "id": "asleep",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "asleep_piano.wav",
+          "name": "Piano"
+        }
+      ]
+    } 
   ],
   "super-bojo": [
     {
