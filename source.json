@@ -97,6 +97,17 @@
       ]
     },  
     {
+      "name": "last night i dreamt...",
+      "id": "last-night",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "intro.wav",
+          "name": "Intro"
+        }
+      ]
+    },
+    {
       "name": "Asleep",
       "id": "asleep",
       "autoforward": false,
