@@ -102,8 +102,12 @@
       "autoforward": false,
       "audios": [
         {
-          "file": "intro.wav",
-          "name": "Intro"
+          "file": "intro-curta.wav",
+          "name": "Curta"
+        },
+        {
+          "file": "intro-completa.wav",
+          "name": "Completa"
         }
       ]
     },
@@ -115,6 +119,17 @@
         {
           "file": "asleep_piano.wav",
           "name": "Piano"
+        }
+      ]
+    },
+    {
+      "name": "I Want one...",
+      "id": "i-want-one",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "intro.wav",
+          "name": "Intro"
         }
       ]
     } 
