@@ -132,6 +132,17 @@
           "name": "Intro"
         }
       ]
+    },
+    {
+      "name": "Rubber Ring",
+      "id": "rubber-ring",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "final.wav",
+          "name": "Final"
+        }
+      ]
     } 
   ],
   "super-bojo": [
