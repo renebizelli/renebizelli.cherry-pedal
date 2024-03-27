@@ -143,6 +143,17 @@
           "name": "Final"
         }
       ]
+    },
+    {
+      "name": "Well I Wonder",
+      "id": "weel-i-wonder",
+      "autoforward": false,
+      "audios": [
+        {
+          "file": "chuva.wav",
+          "name": "Chuva"
+        }
+      ]
     } 
   ],
   "super-bojo": [
