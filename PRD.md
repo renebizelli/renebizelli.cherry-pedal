@@ -69,6 +69,7 @@ Fora de escopo
 - Upload de WAVs pela aplicacao.
 - Suporte a MIDI.
 - Controle de volume por UI.
+- Script offline para analisar e normalizar loudness dos WAVs.
 - Loop, fade-in e fade-out.
 - Dois canais de saida independentes.
 
@@ -308,6 +309,10 @@ Integracoes
 - **Justificativa:** Reduz complexidade inicial e atende a decisao do projeto.
 - **Trade-off:** Diagnostico historico fica limitado a erros exibidos no boot e console.
 
+#### Decisao futura: normalizar audios fora do app
+- **Justificativa:** Um script offline pode nivelar o volume percebido dos WAVs antes do uso em palco sem adicionar processamento no momento do disparo.
+- **Trade-off:** Exige etapa previa de preparacao do acervo e pode gerar copias normalizadas dos arquivos.
+
 ---
 
 ### Dependencias
@@ -355,6 +360,15 @@ Saida de audio USB, HAT, HDMI ou saida analogica configurada no Raspberry.
   - Validar uso com arquivos reais.
 - **Plano de contingencia:** Usar `pygame.mixer.music` apenas para backing tracks longas.
 
+#### Audios com volumes percebidos muito diferentes
+- **Probabilidade:** media
+- **Impacto:** Pode exigir ajuste manual na mesa ou causar diferenca desconfortavel entre samples.
+- **Mitigacao:**
+  - Futuro: criar script offline para analisar loudness dos WAVs.
+  - Futuro: gerar relatorio dos arquivos com maior diferenca de volume percebido.
+  - Futuro: normalizar copias dos WAVs para um alvo definido, como hipotese inicial `-16 LUFS` ou `-18 LUFS`.
+- **Plano de contingencia:** Ajustar manualmente os arquivos de audio antes do show.
+
 #### Erro de audio no Raspberry
 - **Probabilidade:** media
 - **Impacto:** App pode iniciar, mas nao reproduzir audio.
@@ -396,6 +410,7 @@ Saida de audio USB, HAT, HDMI ou saida analogica configurada no Raspberry.
 - O sistema usa `pygame.mixer.Sound` e `Channel(0)` para reproducao.
 - O sistema usa `gpiozero.Button` com `pull_up=True` e `bounce_time=0.03`.
 - O sistema nao depende de caminhos absolutos para audios e assets.
+- Futuro: script de normalizacao gera WAVs com volume percebido consistente antes da execucao do app.
 
 ---
 
@@ -409,6 +424,7 @@ Tipos de teste obrigatorios
 - Teste de GPIO com footswitch real no Raspberry.
 - Teste de audio real no Raspberry com a interface de audio final.
 - Teste de boot manual do app em fullscreen.
+- Futuro: teste de normalizacao offline dos WAVs e comparacao de loudness antes/depois.
 - Futuro: teste de inicializacao automatica via systemd.
 
 Estrategia de validacao
