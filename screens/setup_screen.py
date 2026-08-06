@@ -1,14 +1,14 @@
 import os
 import tkinter as tk
-from PIL import ImageTk, Image, ImageTk
+from PIL import ImageTk, Image
 from tkinter import Label, Frame
 from models.band import Band
-from screens.base_screen import Base_Screen
-import keyboard
-import threading
-import RPi.GPIO as gpio
+from screens.base_screen import BaseScreen
+from services.input_service import InputService
+from services.path_service import asset_path
 
-class Setup_Screen(Base_Screen):
+
+class SetupScreen(BaseScreen):
 
     def __init__(self, root, bands, band_selected):
         
@@ -20,10 +20,8 @@ class Setup_Screen(Base_Screen):
         self._band_selector_widget = []
 
         self._band_selected = band_selected
-        
-        print(self._app_on)
 
-    def set_screen_to_destroy(self, screen_to_destroy: Base_Screen):
+    def set_screen_to_destroy(self, screen_to_destroy: BaseScreen):
         self._screen_to_destroy = screen_to_destroy
 
     def redrawn(self):
@@ -31,45 +29,17 @@ class Setup_Screen(Base_Screen):
         self._index_selected = 0
 
         self._screen_to_destroy.destroy()
-        self.__container_drawn__()
-        self.__band_drawn__()
-        self.__band_selector_drawn__()
-        self.__keyboards__()
-        self.__cherry_drawn__()
-        
-        self._gpio_thread = threading.Thread(target=self.__gpio__, daemon=True)            
-        self._gpio_thread.start()         
+        self._draw_container()
+        self._draw_bands()
+        self._draw_band_selector()
+        self._bind_inputs()
+        self._draw_exit_button()
 
     def destroy(self):
-        self._app_on = False
+        self.stop_inputs()
         self._container.destroy()
-        keyboard.unhook_all()
-                
 
-    def __gpio__(self):
-        
-        self.gpio_init()
-        
-        button_band_forward = 17 # roxo
-        button_selector = 22 #azul
-        
-        self.gpio_add_buttom(button_band_forward)
-        self.gpio_add_buttom(button_selector)
-        self.gpio_set_event()
-        
-        while self._app_on:
-            
-            if gpio.event_detected(button_band_forward):
-                self.__band_forward_click__(None)
-                
-            elif gpio.event_detected(button_selector):
-                self.gpio_destroy()
-                self.__selector_click__(None)                 
-                
-        self.gpio_destroy()
-        
-
-    def __container_drawn__(self):
+    def _draw_container(self):
         self._container = Frame(self._root, bg="black")
         self._container.pack(side="left", fill="both", expand=True)
         self._container.grid_columnconfigure(0, weight=1, pad=0, minsize=200)
@@ -79,13 +49,13 @@ class Setup_Screen(Base_Screen):
         for i in range(len(self._bands)):
             self._container.grid_rowconfigure(i, weight=1, pad=0)
 
-    def __band_drawn__(self):
+    def _draw_bands(self):
 
         self._root.logo = {}
 
         for index, band in enumerate(self._bands):
 
-            path_logo = "assets/bands/{}.jpg".format(band.id)
+            path_logo = asset_path('bands', '{}.jpg'.format(band.id))
 
             if band.logo and os.path.isfile(path_logo):
                 image_name = 'logo-band-{}'.format(band.id)
@@ -103,7 +73,7 @@ class Setup_Screen(Base_Screen):
                                 self._band_selected(band))
                 btn.grid(row=index+1, column=1)
 
-    def __band_selector_drawn__(self):
+    def _draw_band_selector(self):
 
         for widget in self._band_selector_widget:
             widget.destroy()
@@ -113,7 +83,7 @@ class Setup_Screen(Base_Screen):
         for index in range(len(self._bands)):
 
             if index == self._index_selected:
-                img = Image.open("assets/selector.jpg")
+                img = Image.open(asset_path('selector.jpg'))
                 self._root.selector = ImageTk.PhotoImage(img.resize((50, 50)))
                 selector_label = Label(self._container,
                                        image=self._root.selector, bd=0,
@@ -121,29 +91,47 @@ class Setup_Screen(Base_Screen):
                 selector_label.grid(row=index, column=0)
                 self._band_selector_widget.append(selector_label)
 
-    def __band_forward_click__(self, args):
+    def _handle_band_forward(self, args):
         size = len(self._bands)-1
         self._index_selected = self._index_selected + \
             1 if self._index_selected < size else 0
-        self.__band_selector_drawn__()
+        self._draw_band_selector()
 
-    def __selector_click__(self, args):
+    def _handle_selector(self, args):
         band = self._bands[self._index_selected]
         self._band_selected(band)
 
-    def __end__(self, args):
-        self._app_on = False
-        exit()
+    def _end(self, args):
+        self.stop_inputs()
+        self._root.destroy()
 
-    def __keyboards__(self):
-        keyboard.on_press_key('right arrow', self.__band_forward_click__)
-        keyboard.on_press_key('space', self.__selector_click__)
+    def _bind_inputs(self):
+        self.stop_inputs()
+        self._input_service = InputService(
+            keyboard_bindings={
+                'right arrow': self._handle_band_forward,
+                'space': self._handle_selector,
+            },
+            gpio_bindings={
+                17: self._handle_band_forward, # roxo
+                22: self._handle_selector, # azul
+            }
+        )
+        self._input_service.start()
 
-    def __cherry_drawn__(self):
-        img = Image.open("assets/cherry.jpg")
-        self._root.cherry = ImageTk.PhotoImage(img.resize((94, 220)))
-        logo_label = Label(self._container, image=self._root.cherry, bd=0,
-                           bg="black",  anchor="center")
-        logo_label.bind("<Button-1>", self.__end__)
-        logo_label.grid(row=1, rowspan=len(self._bands),
-                        column=3, sticky="w", padx=0, pady=0)
+    def _draw_exit_button(self):
+        exit_button = tk.Button(
+            self._container,
+            text="SAIR",
+            command=lambda: self._end(None),
+            bg="darkred",
+            fg="white",
+            activebackground="red",
+            activeforeground="white",
+            font=("Helvetica", 18, "bold"),
+            bd=0,
+        )
+        exit_button.grid(row=len(self._bands), column=1, sticky="ew", padx=40, pady=12)
+
+
+Setup_Screen = SetupScreen

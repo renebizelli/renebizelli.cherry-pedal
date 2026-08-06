@@ -1,69 +1,100 @@
 from models.audio import Audio
-import pygame
 import os
-import time
 import threading
+import time
+from services.audio_events import AUDIO_ENDS, AUDIO_NOT_FOUND, AUDIO_STARTS
+from services.pygame_audio_player import PygameAudioPlayer
 
-class Player_Service:
+END_BY_PLAY = 9000
+END_BY_STOP = 9001
 
-    def __init__(self, audio: Audio, callback, autoforward):
+
+class AudioNotFoundError(FileNotFoundError):
+    pass
+
+
+class PlayerService:
+    _current_play_id = None
+    _play_sequence = 0
+    _lock = threading.Lock()
+
+    def __init__(self, audio: Audio, callback, autoforward, player=None):
 
         self._audio = audio
         self._callback = callback
         self._autoforward = autoforward
-        self._end_by_play = 9000
-        self._end_by_stop = 9001
+        self._player = player or PygameAudioPlayer()
         self._end = 0
+        self._play_id = None
 
         if not os.path.isfile(audio.file):
-            self._callback('AUDIO_NOT_FOUND')
-            raise Exception("Audio resource " + audio.file + " not found")
+            self._callback(AUDIO_NOT_FOUND)
+            raise AudioNotFoundError("Audio resource " + audio.file + " not found")
 
-        pygame.init()
-        pygame.mixer.init()
-        pygame.mixer.music.load(self._audio.file)
-        pygame.mixer.music.set_volume(1.0)
+        self._player.load(self._audio.file)
 
-    def __set_end__(self, code:int):
+    def _set_end(self, code: int):
         self._end = code
         
-    def __end_compare_by_play__(self) -> bool :
-        return self.__end_compare_(self._end_by_play)
+    def _ended_by_play(self) -> bool:
+        return self._ended_by(END_BY_PLAY)
     
-    def __end_compare_by_stop__(self) -> bool :
-        return self.__end_compare_(self._end_by_stop)
+    def _ended_by_stop(self) -> bool:
+        return self._ended_by(END_BY_STOP)
 
-    def __end_compare_(self, code:int) -> bool :
+    def _ended_by(self, code: int) -> bool:
         return self._end == code
 
-
     def play(self):
-        if pygame.mixer.music.get_busy():
+        if self._player.is_playing():
             self.stop()
-        
-        self.__set_end__(self._end_by_play)
-        pygame.mixer.music.play()
-        t = threading.Thread(target=self.__check_end__, daemon=False)
+
+        with PlayerService._lock:
+            PlayerService._play_sequence += 1
+            self._play_id = PlayerService._play_sequence
+            PlayerService._current_play_id = self._play_id
+
+        self._set_end(END_BY_PLAY)
+        self._player.play()
+        t = threading.Thread(target=self._check_end, args=[self._play_id], daemon=True)
         t.start()
-        self._callback('AUDIO_STARTS')
+        self._callback(AUDIO_STARTS)
 
     def stop(self):
-        self.__set_end__(self._end_by_stop)
-        pygame.mixer.music.stop()
-        # pygame.mixer.music.unload()
-        pygame.mixer.music.load(self._audio.file)
+        owns_current_play = self._owns_current_play()
+        self._set_end(END_BY_STOP)
+        self._player.stop()
 
-    def __check_end__(self):
+        if owns_current_play:
+            with PlayerService._lock:
+                PlayerService._current_play_id = None
+
+            self._callback(AUDIO_ENDS)
+
+    def _owns_current_play(self):
+        with PlayerService._lock:
+            return self._play_id is not None and self._play_id == PlayerService._current_play_id
+
+    def _check_end(self, play_id):
         
         keepon = True
         
         while keepon:
-            keepon = pygame.mixer.music.get_busy()
+            keepon = self._player.is_playing()
+            time.sleep(0.01)
 
-        if self.__end_compare_by_play__():
+        with PlayerService._lock:
+            if play_id != PlayerService._current_play_id:
+                return
+
+            PlayerService._current_play_id = None
+
+        if self._ended_by_play():
             self._autoforward()
-            self._callback('AUDIO_ENDS')
+            self._callback(AUDIO_ENDS)
 
-        elif self.__end_compare_by_stop__():
-            self._callback('AUDIO_ENDS')
- 
+        elif self._ended_by_stop():
+            self._callback(AUDIO_ENDS)
+
+
+Player_Service = PlayerService

@@ -1,24 +1,24 @@
 ﻿{
-  "path": "/home/pi/Desktop/renebizelli.cherry-pedal/bands",
+  "path": "bands",
   "switches": {
     "song": 40,
     "audio": 38,
     "play": 65,
     "stop": 83
   },
-  "bands": [ 
+  "bands": [
     {
       "id": "super-bojo",
       "name": "Super Bojo",
-      "logo" : true
+      "logo": true
     },
     {
-      "id": "viva-hate",
-      "name": "Viva Hate",
-      "logo" : true
+      "id": "ask",
+      "name": "Ask",
+      "logo": true
     }
   ],
-  "viva-hate": [
+  "ask": [
     {
       "name": "Introdução show - 1",
       "id": "introducao-1",
@@ -29,7 +29,7 @@
           "name": "audio"
         }
       ]
-    },  
+    },
     {
       "name": "Introdução show - 2",
       "id": "introducao-2",
@@ -40,7 +40,7 @@
           "name": "audio"
         }
       ]
-    },    
+    },
     {
       "name": "How soon is now",
       "id": "how-soon-is-now",
@@ -49,11 +49,11 @@
         {
           "file": "how-soon-is-now_slide.wav",
           "name": "Slide guitarra"
-        } 
+        }
       ]
     },
     {
-      "name": "Back on the chain", 
+      "name": "Back on the chain",
       "id": "back-on-the-chain-gang",
       "autoforward": false,
       "audios": [
@@ -62,7 +62,7 @@
           "name": "introducao"
         }
       ]
-    }, 
+    },
     {
       "name": "Speedway",
       "id": "speedway",
@@ -73,7 +73,7 @@
           "name": "serra"
         }
       ]
-    },    
+    },
     {
       "name": "Hand in Glove",
       "id": "hand-in-glove",
@@ -84,7 +84,7 @@
           "name": "Gaita"
         }
       ]
-    },  
+    },
     {
       "name": "Final show",
       "id": "final",
@@ -95,7 +95,7 @@
           "name": "audio"
         }
       ]
-    },  
+    },
     {
       "name": "last night i dreamt...",
       "id": "last-night",
@@ -146,7 +146,7 @@
     },
     {
       "name": "Well I Wonder",
-      "id": "weel-i-wonder",
+      "id": "well-i-wonder",
       "autoforward": false,
       "audios": [
         {
@@ -154,7 +154,7 @@
           "name": "Chuva"
         }
       ]
-    } 
+    }
   ],
   "super-bojo": [
     {

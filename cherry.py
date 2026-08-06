@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
+import sys
 from tkinter import *
+from tkinter import messagebox
 from models.band import Band
-from services.source_service import Source_Service
-from screens.painel_screen import Painel_Screen
-from screens.setup_screen import Setup_Screen
+from services.source_service import SourceService
+from screens.painel_screen import PainelScreen
+from screens.setup_screen import SetupScreen
+from screens.splash_screen import SplashScreen
 
 root = Tk()
 root.title('Cherry')
@@ -36,15 +39,32 @@ def band_click(args):
     setup.redrawn()
 
 
-source = Source_Service()
-bands = source.bands()
+def show_startup_error(error):
+    message = "Erro ao iniciar o Cherry:\n\n{}: {}".format(
+        type(error).__name__,
+        error
+    )
+    print(message)
+    messagebox.showerror('Cherry', message)
+    root.destroy()
+    sys.exit(1)
 
-painel = Painel_Screen(root, band_click)
-setup = Setup_Screen(root, bands, band_selected)
+
+try:
+    source = SourceService()
+    source.validate_audio_files()
+    bands = source.bands()
+except Exception as error:
+    show_startup_error(error)
+
+painel = PainelScreen(root, band_click)
+setup = SetupScreen(root, bands, band_selected)
+splash = SplashScreen(root)
 
 painel.set_screen_to_destroy(setup)
 setup.set_screen_to_destroy(painel)
 
-setup.redrawn()
+splash.redrawn()
+root.after(1500, lambda: (splash.destroy(), setup.redrawn()))
 
 root.mainloop()
