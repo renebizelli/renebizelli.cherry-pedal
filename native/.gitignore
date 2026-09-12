@@ -1,2 +1,4 @@
 build/
 docker/out/
+CMakeFiles/
+CMakeCache.txt

@@ -25,10 +25,28 @@ ssh pi@<ip-do-pi> ./hello
 
 Saída esperada: `cherry-pedal native toolchain OK (arm64)`
 
+### Desenvolvimento — testar a lógica pura (sem SDL2/GPIO/áudio real)
+
+Para os módulos que não dependem de hardware (`SourceService` e afins), usar
+a imagem de dev nativa do host (sem QEMU, muito mais rápida) em vez da
+imagem arm64:
+
+```bash
+docker build -t cherry-native-dev -f native/docker/Dockerfile.dev native/docker
+
+docker run --rm -v "<caminho-absoluto-do-repo>:/repo" -w /repo/native \
+    cherry-native-dev bash -c \
+    "cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && cmake --build build -j4 && ./build/test_source_service"
+```
+
+No Windows (Git Bash), prefixe o `docker run` com `MSYS_NO_PATHCONV=1` para
+o caminho do container (`/repo`, `-w /repo/native`) não ser reescrito como
+caminho do Windows.
+
 ### Fase seguinte — build completo do app
 
 (Dockerfile completo com CMake + SDL2 + PortAudio + libsndfile + libgpiod
-será adicionado quando o projeto C++ estiver com código-fonte real nas
+será adicionado quando o motor de áudio e a UI forem implementados nas
 próximas fases do port.)
 
 ## Opção 2 — Build direto no Raspberry Pi (fallback)
