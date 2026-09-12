@@ -172,6 +172,21 @@ void Application::run(SDL_Renderer* renderer, int canvas_width, int canvas_heigh
     canvas_width_ = canvas_width;
     canvas_height_ = canvas_height;
 
+    {
+        SDL_Window* window = SDL_RenderGetWindow(renderer_);
+        int window_w = 0;
+        int window_h = 0;
+        SDL_GetWindowSize(window, &window_w, &window_h);
+        int output_w = 0;
+        int output_h = 0;
+        SDL_GetRendererOutputSize(renderer_, &output_w, &output_h);
+        int logical_w = 0;
+        int logical_h = 0;
+        SDL_RenderGetLogicalSize(renderer_, &logical_w, &logical_h);
+        std::cerr << "SDL sizes: window=" << window_w << "x" << window_h << " output=" << output_w
+                  << "x" << output_h << " logical=" << logical_w << "x" << logical_h << "\n";
+    }
+
     render_loading_screen();
     SDL_Delay(1500);
 
