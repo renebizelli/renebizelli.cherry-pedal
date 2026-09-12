@@ -60,7 +60,50 @@ void SetupScreen::handle_key(SDL_Keycode key) {
     }
 }
 
+SDL_Rect SetupScreen::band_row_rect(std::size_t index, int canvas_height) const {
+    const int row_height = (canvas_height - kExitButtonHeight) / static_cast<int>(bands_.size());
+    return SDL_Rect{
+        kSelectorColumnWidth,
+        static_cast<int>(index) * row_height,
+        kBandColumnWidth,
+        row_height,
+    };
+}
+
+SDL_Rect SetupScreen::exit_button_rect(int canvas_height) const {
+    return SDL_Rect{
+        kSelectorColumnWidth,
+        canvas_height - kExitButtonHeight,
+        kBandColumnWidth,
+        kExitButtonHeight,
+    };
+}
+
+void SetupScreen::handle_click(int x, int y, int canvas_width, int canvas_height) {
+    (void)canvas_width;
+    if (bands_.empty()) {
+        return;
+    }
+
+    const SDL_Point point{x, y};
+
+    for (std::size_t i = 0; i < bands_.size(); ++i) {
+        const SDL_Rect row = band_row_rect(i, canvas_height);
+        if (SDL_PointInRect(&point, &row)) {
+            index_selected_ = i;
+            confirm_selection();
+            return;
+        }
+    }
+
+    const SDL_Rect exit_rect = exit_button_rect(canvas_height);
+    if (SDL_PointInRect(&point, &exit_rect)) {
+        exit_app();
+    }
+}
+
 void SetupScreen::render(SDL_Renderer* renderer, int canvas_width, int canvas_height) const {
+    (void)canvas_width;
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -68,15 +111,8 @@ void SetupScreen::render(SDL_Renderer* renderer, int canvas_width, int canvas_he
         return;
     }
 
-    const int row_height = (canvas_height - kExitButtonHeight) / static_cast<int>(bands_.size());
-
     for (std::size_t i = 0; i < bands_.size(); ++i) {
-        const SDL_Rect row{
-            kSelectorColumnWidth,
-            static_cast<int>(i) * row_height,
-            kBandColumnWidth,
-            row_height,
-        };
+        const SDL_Rect row = band_row_rect(i, canvas_height);
         const bool selected = (i == index_selected_);
         render_band(renderer, row, bands_[i], selected);
 
@@ -85,7 +121,7 @@ void SetupScreen::render(SDL_Renderer* renderer, int canvas_width, int canvas_he
             if (selector != nullptr) {
                 const SDL_Rect selector_rect{
                     (kSelectorColumnWidth - kSelectorSize) / 2,
-                    row.y + (row_height - kSelectorSize) / 2,
+                    row.y + (row.h - kSelectorSize) / 2,
                     kSelectorSize,
                     kSelectorSize,
                 };
@@ -94,12 +130,7 @@ void SetupScreen::render(SDL_Renderer* renderer, int canvas_width, int canvas_he
         }
     }
 
-    const SDL_Rect exit_rect{
-        kSelectorColumnWidth,
-        canvas_height - kExitButtonHeight,
-        kBandColumnWidth,
-        kExitButtonHeight,
-    };
+    const SDL_Rect exit_rect = exit_button_rect(canvas_height);
     SDL_SetRenderDrawColor(renderer, 139, 0, 0, 255);  // darkred
     SDL_RenderFillRect(renderer, &exit_rect);
     render_text(

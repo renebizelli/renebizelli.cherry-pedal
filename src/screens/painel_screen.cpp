@@ -104,6 +104,16 @@ void PainelScreen::handle_key(SDL_Keycode key) {
     }
 }
 
+void PainelScreen::handle_click(int x, int y, int canvas_width, int canvas_height) {
+    (void)canvas_width;
+    (void)canvas_height;
+    const SDL_Point point{x, y};
+    const SDL_Rect band_rect{0, 0, kBandColumnWidth, kHeaderHeight};
+    if (SDL_PointInRect(&point, &band_rect)) {
+        back_to_setup();
+    }
+}
+
 PainelScreen::IndicatorPhase PainelScreen::indicator_phase() const {
     if (playing_.load(std::memory_order_acquire)) {
         return IndicatorPhase::Playing;

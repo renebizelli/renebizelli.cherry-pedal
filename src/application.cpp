@@ -135,6 +135,24 @@ void Application::handle_key(SDL_Keycode key) {
     }
 }
 
+void Application::handle_click(int window_x, int window_y) {
+    // Mouse coordinates arrive in window pixels; screens lay themselves out
+    // in the fixed logical canvas (see SDL_RenderSetLogicalSize in
+    // SdlContext), so they must be converted before hit-testing.
+    float logical_x = 0.0f;
+    float logical_y = 0.0f;
+    SDL_RenderWindowToLogical(
+        renderer_, window_x, window_y, &logical_x, &logical_y);
+    const int x = static_cast<int>(logical_x);
+    const int y = static_cast<int>(logical_y);
+
+    if (active_screen_ == ActiveScreen::Setup && setup_screen_ != nullptr) {
+        setup_screen_->handle_click(x, y, canvas_width_, canvas_height_);
+    } else if (active_screen_ == ActiveScreen::Panel && panel_screen_ != nullptr) {
+        panel_screen_->handle_click(x, y, canvas_width_, canvas_height_);
+    }
+}
+
 void Application::render_loading_screen() {
     if (renderer_ == nullptr) {
         return;
@@ -162,6 +180,8 @@ void Application::run(SDL_Renderer* renderer, int canvas_width, int canvas_heigh
                 quit();
             } else if (event.type == SDL_KEYDOWN) {
                 handle_key(event.key.keysym.sym);
+            } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                handle_click(event.button.x, event.button.y);
             }
         }
 

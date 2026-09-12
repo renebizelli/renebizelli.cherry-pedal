@@ -33,10 +33,16 @@ public:
     void exit_app();
 
     void handle_key(SDL_Keycode key);
+    // Selects the band under (x, y) or triggers the exit button, matching
+    // the original's direct click-to-select (mouse isn't otherwise used —
+    // the pedal is normally operated by footswitch/keyboard).
+    void handle_click(int x, int y, int canvas_width, int canvas_height);
     void render(SDL_Renderer* renderer, int canvas_width, int canvas_height) const;
 
 private:
     void render_band(SDL_Renderer* renderer, const SDL_Rect& row, const Band& band, bool selected) const;
+    SDL_Rect band_row_rect(std::size_t index, int canvas_height) const;
+    SDL_Rect exit_button_rect(int canvas_height) const;
 
     std::vector<Band> bands_;
     Navigator& navigator_;

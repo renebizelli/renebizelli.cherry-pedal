@@ -46,6 +46,7 @@ private:
     void bind_setup_inputs();
     void bind_panel_inputs();
     void handle_key(SDL_Keycode key);
+    void handle_click(int window_x, int window_y);
     void render_loading_screen();
 
     SourceService& source_;

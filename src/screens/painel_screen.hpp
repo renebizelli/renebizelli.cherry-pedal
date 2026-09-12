@@ -43,6 +43,9 @@ public:
     void back_to_setup();
 
     void handle_key(SDL_Keycode key);
+    // Clicking the band name returns to setup, matching the original's
+    // band_label click binding (mouse isn't otherwise used here).
+    void handle_click(int x, int y, int canvas_width, int canvas_height);
     void render(SDL_Renderer* renderer, int canvas_width, int canvas_height) const;
 
 private:
