@@ -12,6 +12,11 @@ public:
     explicit ConfigError(const std::string& message) : std::runtime_error(message) {}
 };
 
+class AudioNotFoundError : public std::runtime_error {
+public:
+    explicit AudioNotFoundError(const std::string& message) : std::runtime_error(message) {}
+};
+
 class MissingAudioFilesError : public std::runtime_error {
 public:
     explicit MissingAudioFilesError(std::vector<std::filesystem::path> missing_files)

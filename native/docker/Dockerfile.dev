@@ -7,7 +7,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     cmake \
     make \
+    pkg-config \
     nlohmann-json3-dev \
+    portaudio19-dev \
+    libsndfile1-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /repo

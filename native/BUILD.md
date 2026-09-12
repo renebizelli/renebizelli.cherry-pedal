@@ -43,11 +43,18 @@ No Windows (Git Bash), prefixe o `docker run` com `MSYS_NO_PATHCONV=1` para
 o caminho do container (`/repo`, `-w /repo/native`) não ser reescrito como
 caminho do Windows.
 
+### Motor de áudio (PortAudio) — pendente de validação no Pi
+
+`PortAudioPlayer`/`PortAudioChannel` já compilam na imagem de dev (PortAudio
++ libsndfile instalados via apt), mas **abrem um dispositivo de áudio real**
+ao construir o canal compartilhado — não há como validar reprodução de fato
+sem hardware de áudio. Nenhum teste automatizado os executa; isso fica para
+o teste manual no Pi (Fase de verificação "motor de áudio" do plano).
+
 ### Fase seguinte — build completo do app
 
-(Dockerfile completo com CMake + SDL2 + PortAudio + libsndfile + libgpiod
-será adicionado quando o motor de áudio e a UI forem implementados nas
-próximas fases do port.)
+(Dockerfile completo com CMake + SDL2 + libgpiod será adicionado quando a UI
+e a integração com GPIO forem implementadas nas próximas fases do port.)
 
 ## Opção 2 — Build direto no Raspberry Pi (fallback)
 
