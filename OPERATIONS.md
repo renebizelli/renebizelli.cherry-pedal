@@ -152,19 +152,57 @@ Reinicie a sessao grafica (ou o Pi) para aplicar.
 
 ---
 
-## Iniciar/parar o app
-
-Por enquanto o app roda em primeiro plano, executado manualmente:
+## Iniciar/parar o app manualmente
 
 ```bash
 cd ~/renebizelli.cherry-pedal
 ./build/cherry_pedal
 ```
 
-`Ctrl+C` interrompe.
+`Ctrl+C` interrompe. Para matar uma instancia rodando em segundo plano:
 
-> Futuro (fora de escopo por ora, ver PRD): iniciar automaticamente no boot
-> via systemd.
+```bash
+killall cherry_pedal
+```
+
+(evite `pkill -f cherry_pedal` por SSH — o proprio comando SSH carrega
+"cherry_pedal" na sua linha de comando e pode se automatar/derrubar a
+propria sessao.)
+
+---
+
+## Inicio automatico ao ligar a Raspberry
+
+O Pi ja faz autologin do usuario `pi` direto no desktop grafico
+(LXDE/PIXEL). O Cherry Pedal foi adicionado ao autostart dessa sessao:
+
+```
+~/.config/autostart/cherry-pedal.desktop
+```
+
+Ou seja: **basta ligar a Raspberry** que o app abre sozinho (com um
+atraso de 3s para dar tempo do desktop/audio inicializarem) — nao
+precisa de SSH nem de digitar nada.
+
+### Desativar o autostart (para desenvolvimento/teste de uma versao nova)
+
+Renomeie ou mova o arquivo temporariamente:
+
+```bash
+mv ~/.config/autostart/cherry-pedal.desktop ~/.config/autostart/cherry-pedal.desktop.disabled
+```
+
+E para reativar:
+
+```bash
+mv ~/.config/autostart/cherry-pedal.desktop.disabled ~/.config/autostart/cherry-pedal.desktop
+```
+
+Reinicie a sessao grafica (ou o Pi) para que a mudanca tenha efeito — o
+autostart so roda no login, nao ao editar o arquivo com o app ja aberto.
+
+> Futuro (se algum dia for necessario rodar sem desktop grafico): migrar
+> para um servico systemd dedicado em vez do autostart do LXDE.
 
 ---
 
