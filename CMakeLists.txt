@@ -36,6 +36,7 @@ add_library(cherry_core
     src/input_service.cpp
     src/layout_helpers.cpp
     src/action_queue.cpp
+    src/resampler.cpp
 )
 target_include_directories(cherry_core PUBLIC src)
 target_link_libraries(cherry_core PUBLIC nlohmann_json::nlohmann_json Threads::Threads)
@@ -106,6 +107,9 @@ target_link_libraries(screenshot_demo PRIVATE cherry_ui)
 
 add_executable(test_action_queue src/tests/test_action_queue.cpp)
 target_link_libraries(test_action_queue PRIVATE cherry_core)
+
+add_executable(test_resampler src/tests/test_resampler.cpp)
+target_link_libraries(test_resampler PRIVATE cherry_core)
 
 # Final composed application: real SDL2 UI + real PortAudio + real libgpiod.
 # Like each hardware backend individually, end-to-end behavior can only be

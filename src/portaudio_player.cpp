@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "resampler.hpp"
 #include "wav_decoder.hpp"
 
 namespace cherry {
@@ -12,19 +13,18 @@ namespace {
 
 // Adapts whatever channel layout the WAV file has to the shared channel's
 // fixed layout (duplicating mono to both channels; real project WAVs are
-// expected to already match — see PRD) and converts libsndfile's
+// expected to already match — see PRD) and converts already-resampled,
 // normalized float samples to the 16-bit PCM the channel plays.
-std::vector<std::int16_t> to_channel_format(const DecodedAudio& decoded) {
+std::vector<std::int16_t> to_channel_format(const std::vector<float>& samples, int source_channels) {
     const int target_channels = PortAudioChannel::channel_count();
-    const std::size_t frames =
-        decoded.interleaved_samples.size() / static_cast<std::size_t>(decoded.channels);
+    const std::size_t frames = samples.size() / static_cast<std::size_t>(source_channels);
 
     std::vector<std::int16_t> converted(frames * static_cast<std::size_t>(target_channels), 0);
 
     for (std::size_t frame = 0; frame < frames; ++frame) {
         for (int channel = 0; channel < target_channels; ++channel) {
-            const int source_channel = channel % decoded.channels;
-            const float sample = decoded.interleaved_samples[frame * decoded.channels + source_channel];
+            const int source_channel = channel % source_channels;
+            const float sample = samples[frame * source_channels + source_channel];
             const float clamped = std::clamp(sample, -1.0f, 1.0f);
             converted[frame * target_channels + channel] = static_cast<std::int16_t>(clamped * 32767.0f);
         }
@@ -40,7 +40,9 @@ PortAudioPlayer::PortAudioPlayer(std::shared_ptr<PortAudioChannel> channel)
 
 void PortAudioPlayer::load(const std::string& file) {
     const DecodedAudio decoded = decode_wav_file(file);
-    auto converted = std::make_shared<std::vector<std::int16_t>>(to_channel_format(decoded));
+    const std::vector<float> resampled = resample_linear(
+        decoded.interleaved_samples, decoded.channels, decoded.sample_rate, PortAudioChannel::sample_rate());
+    auto converted = std::make_shared<std::vector<std::int16_t>>(to_channel_format(resampled, decoded.channels));
 
     std::int16_t peak = 0;
     for (std::int16_t sample : *converted) {
@@ -48,7 +50,8 @@ void PortAudioPlayer::load(const std::string& file) {
     }
 
     std::cerr << "Loaded " << file << ": " << decoded.channels << "ch @ " << decoded.sample_rate
-              << "Hz, " << converted->size() << " samples, peak amplitude " << peak << "\n";
+              << "Hz (resampled to " << PortAudioChannel::sample_rate() << "Hz), " << converted->size()
+              << " samples, peak amplitude " << peak << "\n";
 
     pcm_samples_ = std::move(converted);
 }
