@@ -87,14 +87,14 @@ int main(int argc, char** argv) {
     TextureCache textures(sdl.renderer());
     NoopNavigator navigator;
 
-    SourceService source("../source.json");
+    SourceService source("source.json");
     const auto bands = source.bands();
 
     if (mode == "splash") {
-        SplashScreen splash(textures, "../assets/cherry.jpg");
+        SplashScreen splash(textures, "assets/cherry.jpg");
         splash.render(sdl.renderer(), kWidth, kHeight);
     } else if (mode == "setup" || mode == "setup_selected") {
-        SetupScreen setup(bands, navigator, fonts, textures, "../assets");
+        SetupScreen setup(bands, navigator, fonts, textures, "assets");
         if (mode == "setup_selected") {
             setup.advance_selection();
         }

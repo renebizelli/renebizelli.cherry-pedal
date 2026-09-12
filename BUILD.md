@@ -1,4 +1,4 @@
-# Build do Cherry Pedal nativo (C++) para Raspberry Pi 4
+# Build do Cherry Pedal (C++) para Raspberry Pi 4
 
 ## Opção 1 — Cross-build via Docker Buildx (emulação QEMU arm64)
 
@@ -8,7 +8,7 @@ Docker Desktop atual, via `binfmt`/QEMU).
 ### Fase 1 — validar o toolchain (hello world)
 
 ```bash
-cd native/docker
+cd docker
 docker buildx build --platform linux/arm64 -f Dockerfile.arm64-build --target export -o out .
 file out/hello
 ```
@@ -32,16 +32,15 @@ a imagem de dev nativa do host (sem QEMU, muito mais rápida) em vez da
 imagem arm64:
 
 ```bash
-docker build -t cherry-native-dev -f native/docker/Dockerfile.dev native/docker
+docker build -t cherry-native-dev -f docker/Dockerfile.dev docker
 
-docker run --rm -v "<caminho-absoluto-do-repo>:/repo" -w /repo/native \
+docker run --rm -v "<caminho-absoluto-do-repo>:/repo" -w /repo \
     cherry-native-dev bash -c \
     "cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && cmake --build build -j4 && ./build/test_source_service"
 ```
 
 No Windows (Git Bash), prefixe o `docker run` com `MSYS_NO_PATHCONV=1` para
-o caminho do container (`/repo`, `-w /repo/native`) não ser reescrito como
-caminho do Windows.
+o caminho do container (`/repo`) não ser reescrito como caminho do Windows.
 
 ### Motor de áudio (PortAudio) — pendente de validação no Pi
 
@@ -68,10 +67,10 @@ real do projeto e salva um PNG, sem precisar de display físico nem de
 Xvfb — o driver de vídeo "dummy" do SDL2 rasteriza normalmente em memória:
 
 ```bash
-docker run --rm -v "<repo>:/repo" -w /repo/native \
+docker run --rm -v "<repo>:/repo" -w /repo \
     -e SDL_VIDEODRIVER=dummy -e SDL_AUDIODRIVER=dummy \
     cherry-native-dev bash -c \
-    "./build/screenshot_demo <modo> /repo/native/docker/shots/<modo>.png"
+    "./build/screenshot_demo <modo> /repo/docker/shots/<modo>.png"
 ```
 
 Modos disponíveis: `splash`, `setup`, `setup_selected`, `panel`,
@@ -87,20 +86,19 @@ limitação real no dia a dia.
 
 ### Aplicação final (`cherry_pedal`)
 
-O executável `cherry_pedal` (alvo `native/src/main.cpp`) é a composição
-final: SDL2 real + PortAudio real + libgpiod real. Compila e roda na imagem
-de dev (falha graciosamente, com mensagem de erro, quando não há
-dispositivo de áudio/GPIO real — comportamento confirmado neste ambiente).
-**Só pode ser validado de ponta a ponta no Raspberry Pi**, com footswitches
-e saída de áudio reais conectados.
+O executável `cherry_pedal` (alvo `src/main.cpp`) é a composição final:
+SDL2 real + PortAudio real + libgpiod real. Compila e roda na imagem de dev
+(falha graciosamente, com mensagem de erro, quando não há dispositivo de
+áudio/GPIO real — comportamento confirmado neste ambiente). **Só pode ser
+validado de ponta a ponta no Raspberry Pi**, com footswitches e saída de
+áudio reais conectados.
 
-Deve ser executado a partir da **raiz do projeto** (não de `native/`), pois
-lê `source.json`, `bands/` e `assets/` com caminhos relativos ao diretório
-de trabalho:
+Deve ser executado a partir da **raiz do projeto**, pois lê `source.json`,
+`bands/` e `assets/` com caminhos relativos ao diretório de trabalho:
 
 ```bash
 cd ~/renebizelli.cherry-pedal
-./native/build/cherry_pedal
+./build/cherry_pedal
 ```
 
 No Pi, leitura de GPIO via libgpiod normalmente exige pertencer ao grupo
@@ -119,19 +117,25 @@ sudo apt install -y g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev \
     portaudio19-dev libsndfile1-dev libgpiod-dev nlohmann-json3-dev \
     fonts-dejavu-core
 
-cd ~/renebizelli.cherry-pedal/native
+cd ~/renebizelli.cherry-pedal
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j4
 ```
 
-## Deploy (ambas as opções)
+## Deploy (ao usar o cross-build da Opção 1)
 
-Copiar para o Pi, junto do binário:
-
-- `bands/` (arquivos WAV)
-- `assets/` (imagens)
-- `source.json`
+Se o Pi já tem o repositório clonado (git), basta um `git pull` — `bands/`,
+`assets/` e `source.json` já estão lá. Só falta copiar o binário
+cross-compilado:
 
 ```bash
-rsync -av --exclude 'native' ./ pi@<ip-do-pi>:/home/pi/renebizelli.cherry-pedal/
+scp docker/out/cherry_pedal pi@<ip-do-pi>:/home/pi/renebizelli.cherry-pedal/build/cherry_pedal
+```
+
+Se o Pi não tem o repositório, copie o necessário para rodar (sem o
+código-fonte, já que o binário é pré-compilado):
+
+```bash
+rsync -av bands/ assets/ source.json pi@<ip-do-pi>:/home/pi/renebizelli.cherry-pedal/
+scp <binario-cross-compilado> pi@<ip-do-pi>:/home/pi/renebizelli.cherry-pedal/build/cherry_pedal
 ```

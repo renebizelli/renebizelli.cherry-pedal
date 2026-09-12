@@ -22,7 +22,7 @@ namespace {
 // Reuses a real WAV from the project so PlayerService's existence check in
 // its constructor passes without needing a fixture file of our own.
 Audio existing_audio_fixture() {
-    return Audio{"audio", "audio", "../bands/ask/final/final.wav"};
+    return Audio{"audio", "audio", "bands/ask/final/final.wav"};
 }
 
 void test_play_then_natural_end_fires_starts_then_ends() {

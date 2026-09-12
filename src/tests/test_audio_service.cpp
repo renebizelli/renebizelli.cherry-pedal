@@ -28,8 +28,8 @@ Song two_audio_song(bool autoforward) {
         "Song 1",
         autoforward,
         {
-            Audio{"a1", "Audio 1", "../bands/ask/final/final.wav"},
-            Audio{"a2", "Audio 2", "../bands/ask/rubber-ring/final.wav"},
+            Audio{"a1", "Audio 1", "bands/ask/final/final.wav"},
+            Audio{"a2", "Audio 2", "bands/ask/rubber-ring/final.wav"},
         }};
 }
 

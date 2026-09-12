@@ -4,9 +4,9 @@ Aplicacao C++/SDL2 para disparar audios WAV por GPIO/teclado em um Raspberry
 Pi 4, mantendo painel grafico fullscreen. Usa PortAudio para reproducao de
 baixa latencia e libgpiod para leitura dos footswitches.
 
-O codigo-fonte esta em [`native/`](native/). Veja [`native/BUILD.md`](native/BUILD.md)
-para instrucoes completas de build (cross-build via Docker Buildx, build
-direto no Pi, verificacao visual headless da UI) e deploy.
+Veja [`BUILD.md`](BUILD.md) para instrucoes completas de build (cross-build
+via Docker Buildx, build direto no Pi, verificacao visual headless da UI) e
+deploy.
 
 ## Build rapido (no Raspberry Pi)
 
@@ -16,18 +16,17 @@ sudo apt install -y g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev \
     portaudio19-dev libsndfile1-dev libgpiod-dev nlohmann-json3-dev \
     fonts-dejavu-core
 
-cd native
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j4
 ```
 
 ## Executar
 
-A partir da raiz do projeto (nao de `native/`), pois os caminhos de
-`source.json`, `bands/` e `assets/` sao relativos ao diretorio de trabalho:
+A partir da raiz do projeto, pois os caminhos de `source.json`, `bands/` e
+`assets/` sao relativos ao diretorio de trabalho:
 
 ```bash
-./native/build/cherry_pedal
+./build/cherry_pedal
 ```
 
 ## Observacoes

@@ -250,7 +250,7 @@ Confiabilidade e integridade de dados
 
 Compatibilidade e portabilidade
 - Deve rodar em Raspberry Pi com Linux (Raspberry Pi OS baseado em Debian Bookworm).
-- Deve continuar compilavel/executavel em ambiente de desenvolvimento sem GPIO real (via backends de teste, ver `native/BUILD.md`).
+- Deve continuar compilavel/executavel em ambiente de desenvolvimento sem GPIO real (via backends de teste, ver `BUILD.md`).
 - Caminhos de audio e assets devem ser relativos ao projeto sempre que possivel.
 
 Compliance
@@ -268,7 +268,7 @@ Abordagem
 - Isolar UI, entrada fisica, navegacao de sessao e reproducao de audio em componentes separados.
 - Usar preload de audio por musica para reduzir latencia no disparo.
 
-Componentes (C++, ver `native/src/`)
+Componentes (C++, ver `src/`)
 - `main.cpp` / `Application`: composicao da aplicacao (raiz de composicao), inicializacao, validacao, loop principal e troca de telas.
 - `SourceService`: leitura do `source.json`, resolucao de caminhos e validacao de audios.
 - `SetupScreen`: selecao de banda (SDL2).

@@ -31,7 +31,7 @@ void fail(const std::string& message) {
 }
 
 void check_real_project_config() {
-    SourceService source("../source.json");
+    SourceService source("source.json");
     print_summary(source);
     source.validate_audio_files();
     std::cout << "OK: all audio files configured in source.json exist\n";
