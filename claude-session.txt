@@ -1,1 +1,7 @@
 https://claude.ai/code/session_01XetwHCjMEUKhDvx2nHSqw3
+
+Comandos para autorizar acesso SSH via chave (rodar na Raspberry):
+
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIObm0ffv2maWXNQliz8bY9a2z/WthnXITbh/VUPDjAr cherry-pedal-access" >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
