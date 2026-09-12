@@ -1,0 +1,17 @@
+# Fase 1: valida o toolchain arm64 via emulacao QEMU (Docker Buildx).
+# Base Debian Bookworm = mesma base do Raspberry Pi OS atual, entao os
+# pacotes apt instalados aqui correspondem ao que existe no Pi real.
+FROM debian:bookworm-slim AS build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    g++ \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY hello.cpp .
+
+RUN g++ -o hello hello.cpp
+
+FROM scratch AS export
+COPY --from=build /src/hello /hello
