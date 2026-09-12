@@ -41,7 +41,7 @@ Problemas priorizados
 | Objetivo | Metrica | Meta |
 | --- | --- | --- |
 | Disparar audios de forma musicalmente aceitavel | Latencia percebida entre acionamento do footswitch e inicio do audio | Hipotese: menor que 50 ms em Raspberry Pi configurado |
-| Evitar disparos duplicados por contato mecanico | Eventos duplicados percebidos por acionamento | Zero disparos duplicados perceptiveis usando debounce de 30 ms |
+| Evitar disparos duplicados por contato mecanico | Eventos duplicados percebidos por acionamento | Zero disparos duplicados perceptiveis usando debounce de 200 ms |
 | Evitar falhas tardias por arquivos ausentes | Arquivos WAV configurados validados na inicializacao | 100 por cento dos audios validados antes de abrir o painel |
 | Manter operacao visual clara | Acoes principais disponiveis no painel | Banda, musica, audio selecionado, modo auto/manual e status de play visiveis |
 
@@ -393,7 +393,7 @@ Saida de audio USB, HAT, HDMI ou saida analogica configurada no Raspberry.
 - **Probabilidade:** media
 - **Impacto:** Pode iniciar ou trocar audio indevidamente.
 - **Mitigacao:**
-  - Usar `libgpiod` com debounce por software de 30 ms (`DebouncedButton`).
+  - Usar `libgpiod` com debounce por software de 200 ms (`DebouncedButton`).
   - Testar footswitches reais.
 - **Plano de contingencia:** Aumentar a janela de debounce conforme o hardware.
 
@@ -419,7 +419,7 @@ Saida de audio USB, HAT, HDMI ou saida analogica configurada no Raspberry.
 - O usuario consegue reproduzir o audio selecionado por teclado e GPIO.
 - O usuario consegue interromper a reproducao por teclado e GPIO.
 - O sistema usa PortAudio com um unico stream/canal compartilhado para reproducao (`PortAudioChannel`).
-- O sistema usa `libgpiod` com pull-up e debounce por software de 30 ms (`DebouncedButton`).
+- O sistema usa `libgpiod` com pull-up e debounce por software de 200 ms (`DebouncedButton`).
 - O sistema nao depende de caminhos absolutos para audios e assets.
 - Futuro: script de normalizacao gera WAVs com volume percebido consistente antes da execucao do app.
 

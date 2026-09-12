@@ -37,6 +37,6 @@ A partir da raiz do projeto, pois os caminhos de `source.json`, `bands/` e
 - O app valida os arquivos de audio na inicializacao e exibe erro se algum
   WAV estiver ausente.
 - A leitura dos GPIOs usa `libgpiod` com pull-up e debounce por software
-  (30 ms).
+  (200 ms).
 - Leitura de GPIO normalmente exige pertencer ao grupo `gpio`
   (`sudo usermod -aG gpio $USER`, requer novo login) ou rodar como root.
