@@ -14,6 +14,12 @@ pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 
+# 32-bit ARM (armhf, e.g. a 32-bit Raspberry Pi OS userland) has no native
+# CPU instruction for 8-byte atomic load/store, so std::atomic<int64_t>
+# needs libatomic explicitly linked; 64-bit targets don't need it but
+# linking it there is harmless.
+find_library(ATOMIC_LIBRARY atomic)
+
 add_library(cherry_core
     src/json_file_reader.cpp
     src/path_resolver.cpp
@@ -74,6 +80,9 @@ add_library(cherry_ui
 target_include_directories(cherry_ui PUBLIC src src/screens ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS})
 target_link_directories(cherry_ui PUBLIC ${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_TTF_LIBRARY_DIRS})
 target_link_libraries(cherry_ui PUBLIC cherry_core ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES})
+if(ATOMIC_LIBRARY)
+    target_link_libraries(cherry_ui PUBLIC ${ATOMIC_LIBRARY})
+endif()
 
 add_executable(test_source_service src/tests/test_source_service.cpp)
 target_link_libraries(test_source_service PRIVATE cherry_core)
