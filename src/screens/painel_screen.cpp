@@ -105,11 +105,21 @@ void PainelScreen::handle_key(SDL_Keycode key) {
 }
 
 void PainelScreen::handle_click(int x, int y, int canvas_width, int canvas_height) {
+    (void)x;
     (void)canvas_width;
     (void)canvas_height;
-    const SDL_Point point{x, y};
-    const SDL_Rect band_rect{0, 0, kBandColumnWidth, kHeaderHeight};
-    if (SDL_PointInRect(&point, &band_rect)) {
+    // The header (band name) is the "return to setup" target, but on the
+    // real resistive touchscreen this was tested on, touches near the
+    // physical top edge are measurably less accurate than elsewhere on
+    // screen — sometimes reporting a position above the logical canvas
+    // entirely (negative y). A generous vertical band, not tied to the
+    // header's visual bounds, absorbs that instead of requiring
+    // pixel-perfect accuracy right at the edge. Nothing else in the panel
+    // is clickable, so accepting the full width here is harmless.
+    constexpr int kClickableTop = -80;
+    constexpr int kClickableBottom = 150;
+
+    if (y >= kClickableTop && y <= kClickableBottom) {
         back_to_setup();
     }
 }
