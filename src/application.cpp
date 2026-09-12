@@ -1,7 +1,6 @@
 #include "application.hpp"
 
 #include <chrono>
-#include <iostream>
 #include <thread>
 
 namespace cherry {
@@ -146,9 +145,6 @@ void Application::handle_click(int window_x, int window_y) {
         renderer_, window_x, window_y, &logical_x, &logical_y);
     const int x = static_cast<int>(logical_x);
     const int y = static_cast<int>(logical_y);
-
-    std::cerr << "Click: window(" << window_x << "," << window_y << ") -> logical(" << x << ","
-              << y << ")\n";
 
     if (active_screen_ == ActiveScreen::Setup && setup_screen_ != nullptr) {
         setup_screen_->handle_click(x, y, canvas_width_, canvas_height_);
