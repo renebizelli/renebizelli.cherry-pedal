@@ -127,6 +127,31 @@ o painel.
 
 ---
 
+## Calibrar a touchscreen (toque não acerta o que deveria)
+
+O app tem suporte a clique/toque (ex.: tocar no nome da banda no painel
+volta para a tela de selecao). Se o toque estiver acertando um ponto
+diferente de onde voce encostou (comum em telas resistivas como a
+ADS7846, que precisam de calibracao apos instalar o sistema), o problema
+e de calibracao do X11, nao do app.
+
+```bash
+sudo apt install -y xinput-calibrator
+DISPLAY=:0 xinput_calibrator
+```
+
+Siga os pontos exibidos na tela tocando fisicamente em cada um. Ao final,
+a ferramenta imprime um bloco de configuracao (`Section "InputClass"...`).
+Salve esse bloco em:
+
+```bash
+sudo nano /etc/X11/xorg.conf.d/99-calibration.conf
+```
+
+Reinicie a sessao grafica (ou o Pi) para aplicar.
+
+---
+
 ## Iniciar/parar o app
 
 Por enquanto o app roda em primeiro plano, executado manualmente:

@@ -1,7 +1,6 @@
 #include "application.hpp"
 
 #include <chrono>
-#include <iostream>
 #include <thread>
 
 namespace cherry {
@@ -147,9 +146,6 @@ void Application::handle_click(int window_x, int window_y) {
     const int x = static_cast<int>(logical_x);
     const int y = static_cast<int>(logical_y);
 
-    std::cerr << "Click: window(" << window_x << "," << window_y << ") -> logical(" << x << ","
-              << y << ")\n";
-
     if (active_screen_ == ActiveScreen::Setup && setup_screen_ != nullptr) {
         setup_screen_->handle_click(x, y, canvas_width_, canvas_height_);
     } else if (active_screen_ == ActiveScreen::Panel && panel_screen_ != nullptr) {
@@ -172,21 +168,6 @@ void Application::run(SDL_Renderer* renderer, int canvas_width, int canvas_heigh
     canvas_width_ = canvas_width;
     canvas_height_ = canvas_height;
 
-    {
-        SDL_Window* window = SDL_RenderGetWindow(renderer_);
-        int window_w = 0;
-        int window_h = 0;
-        SDL_GetWindowSize(window, &window_w, &window_h);
-        int output_w = 0;
-        int output_h = 0;
-        SDL_GetRendererOutputSize(renderer_, &output_w, &output_h);
-        int logical_w = 0;
-        int logical_h = 0;
-        SDL_RenderGetLogicalSize(renderer_, &logical_w, &logical_h);
-        std::cerr << "SDL sizes: window=" << window_w << "x" << window_h << " output=" << output_w
-                  << "x" << output_h << " logical=" << logical_w << "x" << logical_h << "\n";
-    }
-
     render_loading_screen();
     SDL_Delay(1500);
 
@@ -199,15 +180,8 @@ void Application::run(SDL_Renderer* renderer, int canvas_width, int canvas_heigh
                 quit();
             } else if (event.type == SDL_KEYDOWN) {
                 handle_key(event.key.keysym.sym);
-            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                std::cerr << "SDL_MOUSEBUTTONDOWN button=" << static_cast<int>(event.button.button)
-                          << " at (" << event.button.x << "," << event.button.y << ")\n";
-                if (event.button.button == SDL_BUTTON_LEFT) {
-                    handle_click(event.button.x, event.button.y);
-                }
-            } else if (event.type == SDL_FINGERDOWN) {
-                std::cerr << "SDL_FINGERDOWN at normalized (" << event.tfinger.x << ","
-                          << event.tfinger.y << ")\n";
+            } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                handle_click(event.button.x, event.button.y);
             }
         }
 
