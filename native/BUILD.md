@@ -51,6 +51,16 @@ ao construir o canal compartilhado — não há como validar reprodução de fat
 sem hardware de áudio. Nenhum teste automatizado os executa; isso fica para
 o teste manual no Pi (Fase de verificação "motor de áudio" do plano).
 
+### GPIO (libgpiod) — pendente de validação no Pi
+
+`GpiodEventSource`/`GpiodButtonFactory` compilam na imagem de dev (libgpiod
+instalado via apt), mas **abrem um chip GPIO real** (`/dev/gpiochipN`) —
+sem um Raspberry Pi (ou outra placa com GPIO exposto), não há como testar
+de fato. A lógica de debounce (`DebouncedButton`) e o agrupamento de botões
+(`InputService`) são testados isoladamente com um `FakeGpioEventSource`,
+sem depender de hardware; a leitura real dos footswitches fica para o
+teste manual no Pi.
+
 ### Fase seguinte — build completo do app
 
 (Dockerfile completo com CMake + SDL2 + libgpiod será adicionado quando a UI
