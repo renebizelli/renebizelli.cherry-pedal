@@ -7,7 +7,12 @@
 namespace cherry {
 
 namespace {
-constexpr unsigned long kFramesPerBuffer = 256;
+// Larger than the PRD's original 256-frame hypothesis: on the real
+// hardware, audio goes through PipeWire's ALSA compatibility layer, which
+// adds real-time overhead on top of raw ALSA. 256 frames (~5.8ms at
+// 44100Hz) was too tight a deadline under that extra layer and produced
+// continuous crackling from buffer underruns.
+constexpr unsigned long kFramesPerBuffer = 1024;
 }
 
 PortAudioChannel::PortAudioChannel() {
