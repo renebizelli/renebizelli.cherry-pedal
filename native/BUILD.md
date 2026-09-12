@@ -85,11 +85,27 @@ software do driver dummy após o primeiro `SDL_RenderPresent`+leitura de
 pixels). Como cada modo já é rápido e independente, isso não é uma
 limitação real no dia a dia.
 
-### Fase seguinte — build completo do app
+### Aplicação final (`cherry_pedal`)
 
-(Dockerfile completo com CMake + SDL2 + libgpiod será adicionado quando a
-integração final com GPIO/áudio reais e o loop principal forem
-implementados na próxima fase do port.)
+O executável `cherry_pedal` (alvo `native/src/main.cpp`) é a composição
+final: SDL2 real + PortAudio real + libgpiod real. Compila e roda na imagem
+de dev (falha graciosamente, com mensagem de erro, quando não há
+dispositivo de áudio/GPIO real — comportamento confirmado neste ambiente).
+**Só pode ser validado de ponta a ponta no Raspberry Pi**, com footswitches
+e saída de áudio reais conectados.
+
+Deve ser executado a partir da **raiz do projeto** (não de `native/`), pois
+lê `source.json`, `bands/` e `assets/` com caminhos relativos ao diretório
+de trabalho:
+
+```bash
+cd ~/renebizelli.cherry-pedal
+./native/build/cherry_pedal
+```
+
+No Pi, leitura de GPIO via libgpiod normalmente exige pertencer ao grupo
+`gpio` (`sudo usermod -aG gpio $USER`, novo login necessário) ou rodar como
+root.
 
 ## Opção 2 — Build direto no Raspberry Pi (fallback)
 
@@ -100,7 +116,8 @@ problemas de libs), compilar direto no Pi via SSH:
 ssh pi@<ip-do-pi>
 sudo apt update
 sudo apt install -y g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev \
-    portaudio19-dev libsndfile1-dev libgpiod-dev nlohmann-json3-dev
+    portaudio19-dev libsndfile1-dev libgpiod-dev nlohmann-json3-dev \
+    fonts-dejavu-core
 
 cd ~/renebizelli.cherry-pedal/native
 cmake -B build -DCMAKE_BUILD_TYPE=Release

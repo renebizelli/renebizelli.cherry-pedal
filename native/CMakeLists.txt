@@ -27,6 +27,7 @@ add_library(cherry_core
     src/debounced_button.cpp
     src/input_service.cpp
     src/layout_helpers.cpp
+    src/action_queue.cpp
 )
 target_include_directories(cherry_core PUBLIC src)
 target_link_libraries(cherry_core PUBLIC nlohmann_json::nlohmann_json Threads::Threads)
@@ -94,3 +95,15 @@ target_link_libraries(test_layout_helpers PRIVATE cherry_core)
 
 add_executable(screenshot_demo src/tools/screenshot_demo.cpp)
 target_link_libraries(screenshot_demo PRIVATE cherry_ui)
+
+add_executable(test_action_queue src/tests/test_action_queue.cpp)
+target_link_libraries(test_action_queue PRIVATE cherry_core)
+
+# Final composed application: real SDL2 UI + real PortAudio + real libgpiod.
+# Like each hardware backend individually, end-to-end behavior can only be
+# fully verified on the Raspberry Pi.
+add_executable(cherry_pedal
+    src/application.cpp
+    src/main.cpp
+)
+target_link_libraries(cherry_pedal PRIVATE cherry_ui cherry_audio_backend cherry_gpio_backend)
