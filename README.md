@@ -6,7 +6,8 @@ baixa latencia e libgpiod para leitura dos footswitches.
 
 Veja [`BUILD.md`](BUILD.md) para instrucoes completas de build (cross-build
 via Docker Buildx, build direto no Pi, verificacao visual headless da UI) e
-deploy.
+[`OPERATIONS.md`](OPERATIONS.md) para operacao no dia a dia (conectar via
+SSH, subir uma versao nova, adicionar musicas e bandas).
 
 ## Build rapido (no Raspberry Pi)
 
