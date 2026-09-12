@@ -61,10 +61,35 @@ de fato. A lógica de debounce (`DebouncedButton`) e o agrupamento de botões
 sem depender de hardware; a leitura real dos footswitches fica para o
 teste manual no Pi.
 
+### UI (SDL2) — verificação visual headless
+
+`screenshot_demo` renderiza uma tela por execução contra o `source.json`
+real do projeto e salva um PNG, sem precisar de display físico nem de
+Xvfb — o driver de vídeo "dummy" do SDL2 rasteriza normalmente em memória:
+
+```bash
+docker run --rm -v "<repo>:/repo" -w /repo/native \
+    -e SDL_VIDEODRIVER=dummy -e SDL_AUDIODRIVER=dummy \
+    cherry-native-dev bash -c \
+    "./build/screenshot_demo <modo> /repo/native/docker/shots/<modo>.png"
+```
+
+Modos disponíveis: `splash`, `setup`, `setup_selected`, `panel`,
+`panel_navigated`, `panel_playing`.
+
+**Importante:** rode **um modo por invocação do processo**. Gerar mais de um
+screenshot no mesmo processo trava indefinidamente com o driver "dummy"
+(motivo não identificado — suspeita de uma interação entre
+`SDL_RenderReadPixels`/`IMG_SavePNG` e o backend de renderização por
+software do driver dummy após o primeiro `SDL_RenderPresent`+leitura de
+pixels). Como cada modo já é rápido e independente, isso não é uma
+limitação real no dia a dia.
+
 ### Fase seguinte — build completo do app
 
-(Dockerfile completo com CMake + SDL2 + libgpiod será adicionado quando a UI
-e a integração com GPIO forem implementadas nas próximas fases do port.)
+(Dockerfile completo com CMake + SDL2 + libgpiod será adicionado quando a
+integração final com GPIO/áudio reais e o loop principal forem
+implementados na próxima fase do port.)
 
 ## Opção 2 — Build direto no Raspberry Pi (fallback)
 

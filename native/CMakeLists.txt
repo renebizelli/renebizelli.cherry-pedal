@@ -10,6 +10,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(PORTAUDIO REQUIRED portaudio-2.0)
 pkg_check_modules(SNDFILE REQUIRED sndfile)
 pkg_check_modules(GPIOD REQUIRED libgpiod)
+pkg_check_modules(SDL2 REQUIRED sdl2)
+pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
+pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 
 add_library(cherry_core
     src/json_file_reader.cpp
@@ -23,6 +26,7 @@ add_library(cherry_core
     src/pedal_controller.cpp
     src/debounced_button.cpp
     src/input_service.cpp
+    src/layout_helpers.cpp
 )
 target_include_directories(cherry_core PUBLIC src)
 target_link_libraries(cherry_core PUBLIC nlohmann_json::nlohmann_json Threads::Threads)
@@ -50,6 +54,26 @@ target_include_directories(cherry_gpio_backend PUBLIC src ${GPIOD_INCLUDE_DIRS})
 target_link_directories(cherry_gpio_backend PUBLIC ${GPIOD_LIBRARY_DIRS})
 target_link_libraries(cherry_gpio_backend PUBLIC cherry_core ${GPIOD_LIBRARIES})
 
+# UI layer (SDL2 + SDL2_image + SDL2_ttf). Screens open a real
+# window/renderer, so — like the audio and GPIO backends — end-to-end
+# behavior can only be fully confirmed on the Raspberry Pi; the pure
+# layout heuristics (layout_helpers, in cherry_core) are unit-tested
+# directly, and the screenshot_demo tool below renders each screen against
+# SDL's headless "dummy" video driver for a quick visual check without a
+# physical display.
+add_library(cherry_ui
+    src/sdl_context.cpp
+    src/font_cache.cpp
+    src/texture_cache.cpp
+    src/text_renderer.cpp
+    src/screens/splash_screen.cpp
+    src/screens/setup_screen.cpp
+    src/screens/painel_screen.cpp
+)
+target_include_directories(cherry_ui PUBLIC src src/screens ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS})
+target_link_directories(cherry_ui PUBLIC ${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_TTF_LIBRARY_DIRS})
+target_link_libraries(cherry_ui PUBLIC cherry_core ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES})
+
 add_executable(test_source_service src/tests/test_source_service.cpp)
 target_link_libraries(test_source_service PRIVATE cherry_core)
 
@@ -64,3 +88,9 @@ target_link_libraries(test_debounced_button PRIVATE cherry_core)
 
 add_executable(test_input_service src/tests/test_input_service.cpp)
 target_link_libraries(test_input_service PRIVATE cherry_core)
+
+add_executable(test_layout_helpers src/tests/test_layout_helpers.cpp)
+target_link_libraries(test_layout_helpers PRIVATE cherry_core)
+
+add_executable(screenshot_demo src/tools/screenshot_demo.cpp)
+target_link_libraries(screenshot_demo PRIVATE cherry_ui)
