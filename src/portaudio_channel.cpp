@@ -20,7 +20,7 @@ PortAudioChannel::PortAudioChannel() {
         &stream_,
         0,
         channel_count(),
-        paFloat32,
+        paInt16,
         sample_rate(),
         kFramesPerBuffer,
         &PortAudioChannel::render_callback,
@@ -51,9 +51,9 @@ PortAudioChannel::~PortAudioChannel() {
     Pa_Terminate();
 }
 
-void PortAudioChannel::play(std::shared_ptr<const std::vector<float>> stereo_samples) {
+void PortAudioChannel::play(std::shared_ptr<const std::vector<std::int16_t>> pcm_samples) {
     position_.store(0, std::memory_order_relaxed);
-    std::atomic_store(&buffer_, std::move(stereo_samples));
+    std::atomic_store(&buffer_, std::move(pcm_samples));
     playing_.store(true, std::memory_order_release);
 }
 
@@ -72,22 +72,22 @@ int PortAudioChannel::render_callback(
     const PaStreamCallbackTimeInfo* /*time_info*/,
     PaStreamCallbackFlags /*status_flags*/,
     void* user_data) {
-    return static_cast<PortAudioChannel*>(user_data)->render(static_cast<float*>(output), frame_count);
+    return static_cast<PortAudioChannel*>(user_data)->render(static_cast<std::int16_t*>(output), frame_count);
 }
 
-int PortAudioChannel::render(float* output, unsigned long frame_count) {
+int PortAudioChannel::render(std::int16_t* output, unsigned long frame_count) {
     const std::size_t frame_samples = static_cast<std::size_t>(frame_count) * channel_count();
     const auto buffer = std::atomic_load(&buffer_);
 
     if (!playing_.load(std::memory_order_acquire) || buffer == nullptr) {
-        std::fill_n(output, frame_samples, 0.0f);
+        std::fill_n(output, frame_samples, static_cast<std::int16_t>(0));
         return paContinue;
     }
 
     std::size_t position = position_.load(std::memory_order_relaxed);
 
     for (std::size_t i = 0; i < frame_samples; ++i) {
-        output[i] = (position < buffer->size()) ? (*buffer)[position++] : 0.0f;
+        output[i] = (position < buffer->size()) ? (*buffer)[position++] : static_cast<std::int16_t>(0);
     }
 
     position_.store(position, std::memory_order_relaxed);

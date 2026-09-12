@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -17,6 +18,12 @@ namespace cherry {
 // called from the UI/input thread while render() runs on PortAudio's own
 // real-time audio thread, so the shared buffer is exchanged via
 // std::atomic_store/std::atomic_load rather than a plain assignment.
+//
+// Uses 16-bit signed PCM rather than float32: it's the format the Pi's own
+// audio codec speaks natively (confirmed via `speaker-test`), avoiding a
+// float-to-int conversion in the ALSA "plug" layer that produced silence
+// on the real hardware in testing even though the stream opened and the
+// decoded audio data itself was correct.
 class PortAudioChannel {
 public:
     PortAudioChannel();
@@ -25,9 +32,9 @@ public:
     PortAudioChannel(const PortAudioChannel&) = delete;
     PortAudioChannel& operator=(const PortAudioChannel&) = delete;
 
-    // `stereo_samples` must already be interleaved at channel_count()
-    // channels and sample_rate() Hz.
-    void play(std::shared_ptr<const std::vector<float>> stereo_samples);
+    // `pcm_samples` must already be interleaved at channel_count() channels
+    // and sample_rate() Hz.
+    void play(std::shared_ptr<const std::vector<std::int16_t>> pcm_samples);
     void stop();
     bool is_playing() const;
 
@@ -43,10 +50,10 @@ private:
         PaStreamCallbackFlags status_flags,
         void* user_data);
 
-    int render(float* output, unsigned long frame_count);
+    int render(std::int16_t* output, unsigned long frame_count);
 
     PaStream* stream_ = nullptr;
-    std::shared_ptr<const std::vector<float>> buffer_;
+    std::shared_ptr<const std::vector<std::int16_t>> buffer_;
     std::atomic<std::size_t> position_{0};
     std::atomic<bool> playing_{false};
 };

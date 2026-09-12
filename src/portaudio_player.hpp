@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,7 +25,7 @@ public:
 
 private:
     std::shared_ptr<PortAudioChannel> channel_;
-    std::shared_ptr<const std::vector<float>> stereo_samples_;
+    std::shared_ptr<const std::vector<std::int16_t>> pcm_samples_;
 };
 
 }  // namespace cherry
