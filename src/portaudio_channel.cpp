@@ -1,6 +1,7 @@
 #include "portaudio_channel.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <stdexcept>
 
 namespace cherry {
@@ -29,6 +30,12 @@ PortAudioChannel::PortAudioChannel() {
         Pa_Terminate();
         throw std::runtime_error(std::string("PortAudio open stream failed: ") + Pa_GetErrorText(error));
     }
+
+    const PaDeviceIndex device_index = Pa_GetDefaultOutputDevice();
+    const PaDeviceInfo* device_info = Pa_GetDeviceInfo(device_index);
+    std::cerr << "PortAudio output device: "
+              << (device_info != nullptr ? device_info->name : "<unknown>") << " (index "
+              << device_index << ")\n";
 
     error = Pa_StartStream(stream_);
     if (error != paNoError) {

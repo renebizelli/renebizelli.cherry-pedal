@@ -1,5 +1,9 @@
 #include "portaudio_player.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+
 #include "wav_decoder.hpp"
 
 namespace cherry {
@@ -39,7 +43,17 @@ PortAudioPlayer::PortAudioPlayer(std::shared_ptr<PortAudioChannel> channel)
 
 void PortAudioPlayer::load(const std::string& file) {
     const DecodedAudio decoded = decode_wav_file(file);
-    stereo_samples_ = std::make_shared<const std::vector<float>>(to_channel_format(decoded));
+    auto converted = std::make_shared<std::vector<float>>(to_channel_format(decoded));
+
+    float peak = 0.0f;
+    for (float sample : *converted) {
+        peak = std::max(peak, std::fabs(sample));
+    }
+
+    std::cerr << "Loaded " << file << ": " << decoded.channels << "ch @ " << decoded.sample_rate
+              << "Hz, " << converted->size() << " samples, peak amplitude " << peak << "\n";
+
+    stereo_samples_ = std::move(converted);
 }
 
 void PortAudioPlayer::play() {
