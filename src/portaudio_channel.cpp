@@ -12,7 +12,7 @@ namespace {
 // adds real-time overhead on top of raw ALSA. 256 frames (~5.8ms at
 // 44100Hz) was too tight a deadline under that extra layer and produced
 // continuous crackling from buffer underruns.
-constexpr unsigned long kFramesPerBuffer = 1024;
+constexpr unsigned long kFramesPerBuffer = 2048;
 }
 
 PortAudioChannel::PortAudioChannel() {
@@ -75,8 +75,11 @@ int PortAudioChannel::render_callback(
     void* output,
     unsigned long frame_count,
     const PaStreamCallbackTimeInfo* /*time_info*/,
-    PaStreamCallbackFlags /*status_flags*/,
+    PaStreamCallbackFlags status_flags,
     void* user_data) {
+    if ((status_flags & paOutputUnderflow) != 0) {
+        std::cerr << "PortAudio: output underflow (buffer starved the audio device)\n";
+    }
     return static_cast<PortAudioChannel*>(user_data)->render(static_cast<std::int16_t*>(output), frame_count);
 }
 
