@@ -1,7 +1,1 @@
-__pycache__/
-*.py[cod]
-*.pyo
-build/
-dist/
-.venv/
-.pytest_cache/
+*.o

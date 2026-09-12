@@ -1,33 +1,42 @@
 # Cherry Pedal
 
-Aplicacao Python/Tkinter para disparar audios WAV por GPIO/teclado em um Raspberry Pi, mantendo painel grafico fullscreen.
+Aplicacao C++/SDL2 para disparar audios WAV por GPIO/teclado em um Raspberry
+Pi 4, mantendo painel grafico fullscreen. Usa PortAudio para reproducao de
+baixa latencia e libgpiod para leitura dos footswitches.
 
-## Instalar no Raspberry
+O codigo-fonte esta em [`native/`](native/). Veja [`native/BUILD.md`](native/BUILD.md)
+para instrucoes completas de build (cross-build via Docker Buildx, build
+direto no Pi, verificacao visual headless da UI) e deploy.
 
-```bash
-cd /home/pi/renebizelli.cherry-pedal
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-Se o `tkinter` nao estiver disponivel no Raspberry Pi OS:
+## Build rapido (no Raspberry Pi)
 
 ```bash
 sudo apt update
-sudo apt install python3-tk
+sudo apt install -y g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev \
+    portaudio19-dev libsndfile1-dev libgpiod-dev nlohmann-json3-dev \
+    fonts-dejavu-core
+
+cd native
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j4
 ```
 
 ## Executar
 
+A partir da raiz do projeto (nao de `native/`), pois os caminhos de
+`source.json`, `bands/` e `assets/` sao relativos ao diretorio de trabalho:
+
 ```bash
-source .venv/bin/activate
-python cherry.py
+./native/build/cherry_pedal
 ```
 
 ## Observacoes
 
 - Os audios devem estar em WAV e configurados no `source.json`.
 - O campo `path` do `source.json` pode ser relativo ao projeto, como `bands`.
-- O app valida os arquivos de audio na inicializacao e exibe erro se algum WAV estiver ausente.
-- A leitura dos GPIOs usa `gpiozero.Button` com `pull_up=True` e `bounce_time=0.03`.
+- O app valida os arquivos de audio na inicializacao e exibe erro se algum
+  WAV estiver ausente.
+- A leitura dos GPIOs usa `libgpiod` com pull-up e debounce por software
+  (30 ms).
+- Leitura de GPIO normalmente exige pertencer ao grupo `gpio`
+  (`sudo usermod -aG gpio $USER`, requer novo login) ou rodar como root.

@@ -8,7 +8,7 @@ Responsavel: Rene Bizelli
 
 ### Resumo
 
-Cherry Pedal e uma aplicacao Python com interface grafica fullscreen para Raspberry Pi, usada para selecionar bandas, musicas e audios WAV e disparar samples por footswitches fisicos conectados aos GPIOs. O projeto deve manter a tela grafica como parte essencial da experiencia, mas o motor de audio e entrada fisica deve priorizar baixa latencia, confiabilidade e operacao em palco.
+Cherry Pedal e uma aplicacao C++ com interface grafica fullscreen para Raspberry Pi, usada para selecionar bandas, musicas e audios WAV e disparar samples por footswitches fisicos conectados aos GPIOs. O projeto deve manter a tela grafica como parte essencial da experiencia, mas o motor de audio e entrada fisica deve priorizar baixa latencia, confiabilidade e operacao em palco.
 
 ---
 
@@ -26,7 +26,7 @@ Cenarios de uso chave
 - Operar o equipamento em fullscreen no Raspberry Pi.
 
 Onde essa feature sera implantada
-- Sistema existente Cherry Pedal, executando em Raspberry Pi com Python 3, interface grafica Tkinter, pygame para audio e gpiozero para leitura dos GPIOs.
+- Sistema existente Cherry Pedal, executando em Raspberry Pi com C++, interface grafica SDL2, PortAudio para audio e libgpiod para leitura dos GPIOs.
 
 Problemas priorizados
 - Latencia perceptivel no disparo de audio, com impacto alto em uso musical ao vivo.
@@ -50,13 +50,13 @@ Problemas priorizados
 ### Escopo
 
 Incluso
-- Interface grafica fullscreen em Tkinter.
+- Interface grafica fullscreen em SDL2.
 - Selecao de banda por tela inicial.
 - Painel de musicas e audios por banda.
 - Disparo de audio por teclado e GPIO.
 - Stop dedicado por teclado e GPIO.
-- Leitura de GPIO via gpiozero com pull-up e debounce.
-- Reproducao WAV por pygame.mixer.Sound com preload por musica.
+- Leitura de GPIO via libgpiod com pull-up e debounce.
+- Reproducao WAV por PortAudio com preload por musica.
 - Uso de um canal de reproducao por vez.
 - Validacao de arquivos de audio na inicializacao.
 - Configuracao de bandas, musicas e audios via `source.json`.
@@ -227,8 +227,8 @@ A aplicacao deve validar todos os arquivos WAV configurados antes de abrir o pai
 ### Requisitos nao funcionais
 
 Performance
-- Hipotese: latencia percebida menor que 50 ms no Raspberry Pi, usando WAV pre-carregado com `pygame.mixer.Sound`.
-- Mixer configurado com frequencia 44100 Hz, 16 bits, 2 canais e buffer 256.
+- Hipotese: latencia percebida menor que 50 ms no Raspberry Pi, usando WAV pre-carregado em memoria via PortAudio.
+- Stream configurado com frequencia 44100 Hz, 2 canais e buffer 256 frames.
 - Arquivos WAV devem ser preferencialmente PCM sem compressao, 16 bits, 44,1 kHz.
 
 Disponibilidade
@@ -249,8 +249,8 @@ Confiabilidade e integridade de dados
 - Arquivos ausentes devem ser detectados antes da tela operacional.
 
 Compatibilidade e portabilidade
-- Deve rodar em Raspberry Pi com Python 3.
-- Deve continuar importavel em ambiente de desenvolvimento sem GPIO real.
+- Deve rodar em Raspberry Pi com Linux (Raspberry Pi OS baseado em Debian Bookworm).
+- Deve continuar compilavel/executavel em ambiente de desenvolvimento sem GPIO real (via backends de teste, ver `native/BUILD.md`).
 - Caminhos de audio e assets devem ser relativos ao projeto sempre que possivel.
 
 Compliance
@@ -268,24 +268,31 @@ Abordagem
 - Isolar UI, entrada fisica, navegacao de sessao e reproducao de audio em componentes separados.
 - Usar preload de audio por musica para reduzir latencia no disparo.
 
-Componentes
-- `cherry.py`: composicao da aplicacao, inicializacao, validacao e abertura das telas.
+Componentes (C++, ver `native/src/`)
+- `main.cpp` / `Application`: composicao da aplicacao (raiz de composicao), inicializacao, validacao, loop principal e troca de telas.
 - `SourceService`: leitura do `source.json`, resolucao de caminhos e validacao de audios.
-- `SetupScreen`: selecao de banda.
-- `PainelScreen`: painel operacional de musica, audio, play e stop.
-- `InputService`: integracao com teclado e gpiozero.
+- `SetupScreen`: selecao de banda (SDL2).
+- `PainelScreen`: painel operacional de musica, audio, play e stop (SDL2).
+- `InputService` / `DebouncedButton` / `GpiodEventSource`: integracao com GPIO via libgpiod, com debounce por software.
+- `ActionQueue`: repassa eventos de GPIO (thread de fundo) para a thread principal antes de mexer em tela/estado.
 - `PedalController`: fachada de acoes da sessao.
 - `SongService`: navegacao entre musicas.
 - `AudioService`: navegacao e preload dos audios da musica atual.
-- `PlayerService`: orquestracao de play, stop e eventos de audio.
-- `PygameAudioPlayer`: implementacao concreta com `pygame.mixer.Sound` e `Channel(0)`.
-- Modelos `Band`, `Song` e `Audio`: entidades de configuracao imutaveis.
+- `PlayerService`: orquestracao de play, stop e eventos de audio, com `PlaybackSequencer` para coordenar qual reproducao e a atual.
+- `PortAudioPlayer` / `PortAudioChannel`: implementacao concreta com PortAudio e um unico stream persistente (equivalente ao `Channel(0)` do pygame).
+- Modelos `Band`, `Song` e `Audio`: entidades de configuracao imutaveis (structs).
 
 Integracoes
-- GPIO fisico via `gpiozero.Button`.
-- Audio via `pygame.mixer`, SDL2 e stack de audio do Raspberry Pi.
+- GPIO fisico via `libgpiod`.
+- Audio via PortAudio + libsndfile (decodificacao WAV) e stack de audio do Raspberry Pi (ALSA).
+- UI via SDL2 + SDL2_image + SDL2_ttf.
 - Arquivos locais WAV.
 - Assets locais JPG.
+
+> Nota: o projeto foi originalmente prototipado em Python/Tkinter/pygame e
+> reescrito em C++ para reduzir e estabilizar a latencia de disparo (ver
+> decisao "Reescrever em C++" abaixo). O historico Python permanece no
+> git da branch `feat/refactory-ia`.
 
 ### Decisoes e trade-offs
 
@@ -293,17 +300,21 @@ Integracoes
 - **Justificativa:** A selecao visual de bandas, musicas e audios e essencial para o uso do projeto.
 - **Trade-off:** O sistema depende de ambiente grafico no Raspberry, portanto nao segue o requisito headless puro.
 
-#### Decisao: usar `pygame.mixer.Sound`
-- **Justificativa:** `Sound` carrega WAV em memoria e reduz latencia no disparo.
-- **Trade-off:** Consome mais memoria quando comparado a streaming via `pygame.mixer.music`.
+#### Decisao: usar PortAudio com buffer pre-carregado em memoria
+- **Justificativa:** Decodificar o WAV uma vez (preload) e entregar o PCM pronto ao canal compartilhado evita qualquer decodificacao no caminho de disparo, reduzindo latencia.
+- **Trade-off:** Consome mais memoria quando comparado a streaming.
 
 #### Decisao: usar um unico canal de reproducao
 - **Justificativa:** Simplifica a politica de palco e garante um audio por vez.
 - **Trade-off:** Nao permite sobreposicao de samples.
 
-#### Decisao: usar `gpiozero.Button`
-- **Justificativa:** API mais simples e alinhada ao Raspberry Pi para pull-up e debounce.
-- **Trade-off:** Introduz dependencia direta de `gpiozero` no ambiente de producao.
+#### Decisao: usar `libgpiod`
+- **Justificativa:** API padrao atual do Raspberry Pi OS para GPIO (sysfs GPIO esta deprecado); debounce implementado em software (`DebouncedButton`), equivalente ao `bounce_time` do antigo `gpiozero.Button`.
+- **Trade-off:** Introduz dependencia direta de `libgpiod` no ambiente de producao.
+
+#### Decisao: reescrever em C++ (SDL2 + PortAudio + libgpiod)
+- **Justificativa:** A versao inicial em Python/Tkinter/pygame tinha overhead de interpretador e contencao de GIL entre a thread de deteccao de fim de audio e a UI/GPIO, alem de uma camada extra (pygame/SDL2) sobre o ALSA — tudo somando latencia e jitter no requisito mais critico do projeto (disparo musicalmente aceitavel).
+- **Trade-off:** Maior esforco de desenvolvimento e manutencao por reescrita completa; exige builds nativos (cross-build via Docker Buildx com emulacao QEMU arm64, ou build direto no Pi) em vez de um interpretador portavel.
 
 #### Decisao: nao implementar logs estruturados agora
 - **Justificativa:** Reduz complexidade inicial e atende a decisao do projeto.
@@ -317,23 +328,23 @@ Integracoes
 
 ### Dependencias
 
-#### Tecnica: Python 3
-Runtime principal da aplicacao.
+#### Tecnica: C++17 / CMake
+Linguagem e sistema de build principal da aplicacao.
 
-#### Tecnica: pygame
-Reproducao de audio WAV via mixer.
+#### Tecnica: SDL2, SDL2_image, SDL2_ttf
+Interface grafica fullscreen, carregamento de imagens (logos, seletor) e texto.
 
-#### Tecnica: gpiozero
-Leitura de GPIOs com pull-up e debounce.
+#### Tecnica: PortAudio
+Reproducao de audio de baixa latencia via stream persistente.
 
-#### Tecnica: Pillow
-Carregamento e exibicao de imagens no Tkinter.
+#### Tecnica: libsndfile
+Decodificacao de arquivos WAV para PCM.
 
-#### Tecnica: keyboard
-Atalhos de teclado para desenvolvimento e operacao alternativa.
+#### Tecnica: libgpiod
+Leitura de GPIOs com pull-up; debounce implementado em software na aplicacao.
 
-#### Tecnica: tkinter
-Interface grafica fullscreen. No Raspberry Pi OS pode exigir pacote de sistema `python3-tk`.
+#### Tecnica: nlohmann-json
+Leitura do `source.json`.
 
 #### Externa: interface de audio
 Saida de audio USB, HAT, HDMI ou saida analogica configurada no Raspberry.
@@ -347,10 +358,10 @@ Saida de audio USB, HAT, HDMI ou saida analogica configurada no Raspberry.
 - **Impacto:** Alto em uso musical ao vivo.
 - **Mitigacao:**
   - Usar WAV PCM.
-  - Usar `pygame.mixer.Sound`.
+  - Usar PortAudio com stream persistente (sem overhead de abrir/fechar por disparo).
   - Pre-carregar audios por musica.
   - Testar buffers 128, 256 e 512 no Raspberry.
-- **Plano de contingencia:** Ajustar buffer do mixer ou avaliar biblioteca de audio alternativa.
+- **Plano de contingencia:** Ajustar buffer do stream ou avaliar biblioteca de audio alternativa.
 
 #### Consumo de memoria com audios longos
 - **Probabilidade:** media
@@ -358,7 +369,7 @@ Saida de audio USB, HAT, HDMI ou saida analogica configurada no Raspberry.
 - **Mitigacao:**
   - Pre-carregar apenas os audios da musica atual.
   - Validar uso com arquivos reais.
-- **Plano de contingencia:** Usar `pygame.mixer.music` apenas para backing tracks longas.
+- **Plano de contingencia:** Usar streaming em vez de preload total apenas para backing tracks longas.
 
 #### Audios com volumes percebidos muito diferentes
 - **Probabilidade:** media
@@ -382,9 +393,9 @@ Saida de audio USB, HAT, HDMI ou saida analogica configurada no Raspberry.
 - **Probabilidade:** media
 - **Impacto:** Pode iniciar ou trocar audio indevidamente.
 - **Mitigacao:**
-  - Usar `gpiozero.Button` com `bounce_time=0.03`.
+  - Usar `libgpiod` com debounce por software de 30 ms (`DebouncedButton`).
   - Testar footswitches reais.
-- **Plano de contingencia:** Aumentar `bounce_time` conforme o hardware.
+- **Plano de contingencia:** Aumentar a janela de debounce conforme o hardware.
 
 #### Arquivo WAV ausente ou caminho incorreto
 - **Probabilidade:** media
@@ -407,8 +418,8 @@ Saida de audio USB, HAT, HDMI ou saida analogica configurada no Raspberry.
 - O usuario consegue navegar entre audios por teclado e GPIO.
 - O usuario consegue reproduzir o audio selecionado por teclado e GPIO.
 - O usuario consegue interromper a reproducao por teclado e GPIO.
-- O sistema usa `pygame.mixer.Sound` e `Channel(0)` para reproducao.
-- O sistema usa `gpiozero.Button` com `pull_up=True` e `bounce_time=0.03`.
+- O sistema usa PortAudio com um unico stream/canal compartilhado para reproducao (`PortAudioChannel`).
+- O sistema usa `libgpiod` com pull-up e debounce por software de 30 ms (`DebouncedButton`).
 - O sistema nao depende de caminhos absolutos para audios e assets.
 - Futuro: script de normalizacao gera WAVs com volume percebido consistente antes da execucao do app.
 
