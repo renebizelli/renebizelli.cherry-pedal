@@ -1,0 +1,21 @@
+# Imagem de desenvolvimento nativa (arquitetura do host, sem QEMU) para
+# iterar rapido durante o port: compilar e rodar os testes de logica pura
+# (sem SDL2/GPIO/audio real) muito mais rapido que a emulacao arm64.
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    g++ \
+    cmake \
+    make \
+    pkg-config \
+    nlohmann-json3-dev \
+    portaudio19-dev \
+    libsndfile1-dev \
+    libgpiod-dev \
+    libsdl2-dev \
+    libsdl2-image-dev \
+    libsdl2-ttf-dev \
+    fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /repo

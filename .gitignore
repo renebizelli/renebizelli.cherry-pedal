@@ -1,0 +1,6 @@
+*.o
+build/
+docker/out/
+docker/shots/
+CMakeFiles/
+CMakeCache.txt

@@ -1,0 +1,141 @@
+# Build do Cherry Pedal (C++) para Raspberry Pi 4
+
+## Opção 1 — Cross-build via Docker Buildx (emulação QEMU arm64)
+
+Pré-requisito: Docker Desktop rodando, com suporte a `linux/arm64` (padrão no
+Docker Desktop atual, via `binfmt`/QEMU).
+
+### Fase 1 — validar o toolchain (hello world)
+
+```bash
+cd docker
+docker buildx build --platform linux/arm64 -f Dockerfile.arm64-build --target export -o out .
+file out/hello
+```
+
+O `file out/hello` deve mostrar algo como:
+`ELF 64-bit LSB executable, ARM aarch64 ...`
+
+Para confirmar que roda de verdade, copie para o Pi e execute via SSH:
+
+```bash
+scp out/hello pi@<ip-do-pi>:/home/pi/hello
+ssh pi@<ip-do-pi> ./hello
+```
+
+Saída esperada: `cherry-pedal native toolchain OK (arm64)`
+
+### Desenvolvimento — testar a lógica pura (sem SDL2/GPIO/áudio real)
+
+Para os módulos que não dependem de hardware (`SourceService` e afins), usar
+a imagem de dev nativa do host (sem QEMU, muito mais rápida) em vez da
+imagem arm64:
+
+```bash
+docker build -t cherry-native-dev -f docker/Dockerfile.dev docker
+
+docker run --rm -v "<caminho-absoluto-do-repo>:/repo" -w /repo \
+    cherry-native-dev bash -c \
+    "cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && cmake --build build -j4 && ./build/test_source_service"
+```
+
+No Windows (Git Bash), prefixe o `docker run` com `MSYS_NO_PATHCONV=1` para
+o caminho do container (`/repo`) não ser reescrito como caminho do Windows.
+
+### Motor de áudio (PortAudio) — pendente de validação no Pi
+
+`PortAudioPlayer`/`PortAudioChannel` já compilam na imagem de dev (PortAudio
++ libsndfile instalados via apt), mas **abrem um dispositivo de áudio real**
+ao construir o canal compartilhado — não há como validar reprodução de fato
+sem hardware de áudio. Nenhum teste automatizado os executa; isso fica para
+o teste manual no Pi (Fase de verificação "motor de áudio" do plano).
+
+### GPIO (libgpiod) — pendente de validação no Pi
+
+`GpiodEventSource`/`GpiodButtonFactory` compilam na imagem de dev (libgpiod
+instalado via apt), mas **abrem um chip GPIO real** (`/dev/gpiochipN`) —
+sem um Raspberry Pi (ou outra placa com GPIO exposto), não há como testar
+de fato. A lógica de debounce (`DebouncedButton`) e o agrupamento de botões
+(`InputService`) são testados isoladamente com um `FakeGpioEventSource`,
+sem depender de hardware; a leitura real dos footswitches fica para o
+teste manual no Pi.
+
+### UI (SDL2) — verificação visual headless
+
+`screenshot_demo` renderiza uma tela por execução contra o `source.json`
+real do projeto e salva um PNG, sem precisar de display físico nem de
+Xvfb — o driver de vídeo "dummy" do SDL2 rasteriza normalmente em memória:
+
+```bash
+docker run --rm -v "<repo>:/repo" -w /repo \
+    -e SDL_VIDEODRIVER=dummy -e SDL_AUDIODRIVER=dummy \
+    cherry-native-dev bash -c \
+    "./build/screenshot_demo <modo> /repo/docker/shots/<modo>.png"
+```
+
+Modos disponíveis: `splash`, `setup`, `setup_selected`, `panel`,
+`panel_navigated`, `panel_playing`.
+
+**Importante:** rode **um modo por invocação do processo**. Gerar mais de um
+screenshot no mesmo processo trava indefinidamente com o driver "dummy"
+(motivo não identificado — suspeita de uma interação entre
+`SDL_RenderReadPixels`/`IMG_SavePNG` e o backend de renderização por
+software do driver dummy após o primeiro `SDL_RenderPresent`+leitura de
+pixels). Como cada modo já é rápido e independente, isso não é uma
+limitação real no dia a dia.
+
+### Aplicação final (`cherry_pedal`)
+
+O executável `cherry_pedal` (alvo `src/main.cpp`) é a composição final:
+SDL2 real + PortAudio real + libgpiod real. Compila e roda na imagem de dev
+(falha graciosamente, com mensagem de erro, quando não há dispositivo de
+áudio/GPIO real — comportamento confirmado neste ambiente). **Só pode ser
+validado de ponta a ponta no Raspberry Pi**, com footswitches e saída de
+áudio reais conectados.
+
+Deve ser executado a partir da **raiz do projeto**, pois lê `source.json`,
+`bands/` e `assets/` com caminhos relativos ao diretório de trabalho:
+
+```bash
+cd ~/renebizelli.cherry-pedal
+./build/cherry_pedal
+```
+
+No Pi, leitura de GPIO via libgpiod normalmente exige pertencer ao grupo
+`gpio` (`sudo usermod -aG gpio $USER`, novo login necessário) ou rodar como
+root.
+
+## Opção 2 — Build direto no Raspberry Pi (fallback)
+
+Caso o cross-build via QEMU se mostre inviável (lento demais ou com
+problemas de libs), compilar direto no Pi via SSH:
+
+```bash
+ssh pi@<ip-do-pi>
+sudo apt update
+sudo apt install -y g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev \
+    portaudio19-dev libsndfile1-dev libgpiod-dev nlohmann-json3-dev \
+    fonts-dejavu-core
+
+cd ~/renebizelli.cherry-pedal
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j4
+```
+
+## Deploy (ao usar o cross-build da Opção 1)
+
+Se o Pi já tem o repositório clonado (git), basta um `git pull` — `bands/`,
+`assets/` e `source.json` já estão lá. Só falta copiar o binário
+cross-compilado:
+
+```bash
+scp docker/out/cherry_pedal pi@<ip-do-pi>:/home/pi/renebizelli.cherry-pedal/build/cherry_pedal
+```
+
+Se o Pi não tem o repositório, copie o necessário para rodar (sem o
+código-fonte, já que o binário é pré-compilado):
+
+```bash
+rsync -av bands/ assets/ source.json pi@<ip-do-pi>:/home/pi/renebizelli.cherry-pedal/
+scp <binario-cross-compilado> pi@<ip-do-pi>:/home/pi/renebizelli.cherry-pedal/build/cherry_pedal
+```
