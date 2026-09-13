@@ -1,0 +1,34 @@
+# Cross-build for 32-bit ARM (armhf / arm/v7) via Docker Buildx + QEMU
+# emulation. This Raspberry Pi 4 runs a 32-bit Raspberry Pi OS userland
+# (Bookworm) on top of a 64-bit-capable kernel, so this is the
+# architecture that actually matches it — NOT linux/arm64 (see
+# Dockerfile.arm64-build, kept for other, genuinely 64-bit targets).
+#
+# Build from the repo root (needs CMakeLists.txt and src/):
+#   docker buildx build --platform linux/arm/v7 \
+#     -f docker/Dockerfile.armhf-build --target export -o out .
+FROM debian:bookworm-slim AS build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    g++ \
+    cmake \
+    make \
+    pkg-config \
+    nlohmann-json3-dev \
+    libsdl2-dev \
+    libsdl2-image-dev \
+    libsdl2-ttf-dev \
+    portaudio19-dev \
+    libsndfile1-dev \
+    libgpiod-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY CMakeLists.txt .
+COPY src/ src/
+
+RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release \
+    && cmake --build build -j"$(nproc)" --target cherry_pedal
+
+FROM scratch AS export
+COPY --from=build /src/build/cherry_pedal /cherry_pedal

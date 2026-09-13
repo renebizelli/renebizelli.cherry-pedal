@@ -55,11 +55,24 @@ cmake --build build -j4
 Reinicie o app (veja "Iniciar/parar o app" abaixo) para carregar o binario
 novo.
 
-### Se preferir so copiar um binario pre-compilado (cross-build feito fora do Pi)
+### Se preferir so copiar um pacote pronto (cross-build feito fora do Pi, sem git/toolchain no Pi)
+
+Na maquina de desenvolvimento (ver `BUILD.md`, Opcao 1b):
 
 ```bash
-scp build/cherry_pedal pi@192.168.15.4:~/renebizelli.cherry-pedal/build/cherry_pedal
+./scripts/package-release.sh
 ```
+
+Isso gera `dist/cherry-pedal-update/` com o binario ja compilado para
+armhf + `bands/`/`assets/`/`source.json`. Copie essa pasta para o Pi (via
+pendrive ou `scp -r`) e, dentro dela na Raspberry, rode:
+
+```bash
+./install-update.sh
+```
+
+Util especialmente quando o SSH/rede estiver instavel — o pendrive nao
+depende da rede local funcionando.
 
 ---
 

@@ -25,6 +25,43 @@ ssh pi@<ip-do-pi> ./hello
 
 Saída esperada: `cherry-pedal native toolchain OK (arm64)`
 
+> **Atenção:** o Raspberry Pi 4 usado neste projeto roda um **Raspberry Pi
+> OS de 32 bits (armhf)**, mesmo com kernel 64-bit — confirmado via
+> `dpkg --print-architecture` no próprio Pi. Um binário `arm64` **não
+> roda** nele. Para esse Pi especificamente, use a Opção 1b abaixo
+> (armhf), não esta.
+
+### Opção 1b — Cross-build para armhf (32-bit) — a que serve para este Pi
+
+```bash
+docker buildx build --platform linux/arm/v7 \
+    -f docker/Dockerfile.armhf-build --target export -o docker/out-armhf .
+file docker/out-armhf/cherry_pedal
+```
+
+Deve mostrar `ELF 32-bit LSB ... ARM, EABI5 ...`.
+
+Para empacotar o binário + tudo que o app precisa em tempo de execução
+(`bands/`, `assets/`, `source.json`) numa pasta pronta para levar por
+pendrive ou copiar pela rede, use o script pronto (roda o comando acima
+por baixo dos panos):
+
+```bash
+./scripts/package-release.sh
+```
+
+Gera `dist/cherry-pedal-update/`. Copie essa pasta para o Pi (pendrive,
+`scp -r`, etc.) e, **na Raspberry**, dentro dela, rode:
+
+```bash
+./install-update.sh
+```
+
+Isso atualiza `~/renebizelli.cherry-pedal` (binário, `bands/`, `assets/`,
+`source.json`) sem precisar de git nem do toolchain C++ instalado no Pi —
+só as bibliotecas de runtime (SDL2, PortAudio, libsndfile, libgpiod), que
+já devem estar instaladas la (ver `apt install` na Opção 2 abaixo).
+
 ### Desenvolvimento — testar a lógica pura (sem SDL2/GPIO/áudio real)
 
 Para os módulos que não dependem de hardware (`SourceService` e afins), usar

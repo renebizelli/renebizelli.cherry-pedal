@@ -1,6 +1,8 @@
 *.o
 build/
 docker/out/
+docker/out-armhf/
 docker/shots/
 CMakeFiles/
 CMakeCache.txt
+dist/
