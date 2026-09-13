@@ -20,24 +20,17 @@
   ],
   "ask": [
     {
-      "name": "Introdução show - 1",
-      "id": "introducao-1",
+      "name": "Introduções",
+      "id": "introducoes",
       "autoforward": false,
       "audios": [
         {
-          "file": "introducao.wav",
-          "name": "audio"
-        }
-      ]
-    },
-    {
-      "name": "Introdução show - 2",
-      "id": "introducao-2",
-      "autoforward": false,
-      "audios": [
+          "file": "introducao-1.wav",
+          "name": "intro 1"
+        },
         {
-          "file": "introducao.wav",
-          "name": "audio"
+          "file": "introducao-2.wav",
+          "name": "intro 2"
         }
       ]
     },
@@ -48,7 +41,11 @@
       "audios": [
         {
           "file": "how-soon-is-now_slide.wav",
-          "name": "Slide guitarra"
+          "name": "slide"
+        },
+        {
+          "file": "how-soon-is-now-slide-original.wav",
+          "name": "slide original"
         }
       ]
     },
