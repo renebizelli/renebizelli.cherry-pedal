@@ -23,6 +23,10 @@ public:
     std::vector<Song> songs(const Band& band) const;
     void validate_audio_files() const;
 
+    // Where source.json (and, by convention, bands/) live — the destination
+    // ContentImporter writes an imported update to.
+    const std::filesystem::path& project_root() const { return path_resolver_.project_root(); }
+
 private:
     std::filesystem::path bands_root() const;
 

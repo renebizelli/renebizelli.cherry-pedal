@@ -16,6 +16,7 @@ constexpr int kHeaderHeight = 54;
 constexpr int kSongHeight = 115;
 constexpr int kIndicatorRadius = 70;
 constexpr int kHeaderPadding = 16;
+constexpr int kSyncButtonHeight = 40;
 constexpr auto kIndicatorHideAfterMs = 5000;
 constexpr auto kIndicatorBlinkIntervalMs = 500;
 
@@ -79,6 +80,10 @@ void PainelScreen::back_to_setup() {
     navigator_.show_setup();
 }
 
+void PainelScreen::open_sync() {
+    navigator_.show_sync(band_);
+}
+
 void PainelScreen::handle_key(SDL_Keycode key) {
     switch (key) {
         case SDLK_DOWN:
@@ -105,9 +110,16 @@ void PainelScreen::handle_key(SDL_Keycode key) {
 }
 
 void PainelScreen::handle_click(int x, int y, int canvas_width, int canvas_height) {
-    (void)x;
     (void)canvas_width;
-    (void)canvas_height;
+
+    const SDL_Rect sync_button{
+        kBandColumnWidth, canvas_height - kSyncButtonHeight, kIndicatorColumnWidth, kSyncButtonHeight};
+    const SDL_Point point{x, y};
+    if (SDL_PointInRect(&point, &sync_button)) {
+        open_sync();
+        return;
+    }
+
     // The header (band name) is the "return to setup" target, but on the
     // real resistive touchscreen this was tested on, touches near the
     // physical top edge are measurably less accurate than elsewhere on
@@ -243,6 +255,13 @@ void PainelScreen::render(SDL_Renderer* renderer, int canvas_width, int canvas_h
             SDL_RenderFillRect(renderer, &square);
         }
     }
+
+    const SDL_Rect sync_button{
+        kBandColumnWidth, canvas_height - kSyncButtonHeight, kIndicatorColumnWidth, kSyncButtonHeight};
+    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
+    SDL_RenderFillRect(renderer, &sync_button);
+    render_text(
+        renderer, fonts_, "Sincronizar", sync_button, TextStyle{16, true, SDL_Color{200, 200, 200, 255}});
 }
 
 }  // namespace cherry

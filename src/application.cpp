@@ -40,6 +40,7 @@ void Application::show_setup() {
     input_service_.stop();
     input_service_ = InputService();
     panel_screen_.reset();
+    sync_screen_.reset();
 
     setup_screen_ =
         std::make_unique<SetupScreen>(source_.bands(), *this, fonts_, textures_, assets_dir_);
@@ -49,8 +50,9 @@ void Application::show_setup() {
 }
 
 void Application::show_panel(const Band& band) {
-    // Copied before setup_screen_ (which owns the Band `band` may reference,
-    // if the caller was e.g. SetupScreen::confirm_selection()) is reset.
+    // Copied before setup_screen_/sync_screen_ (either of which may own the
+    // Band `band` references, if the caller was e.g.
+    // SetupScreen::confirm_selection() or SyncScreen's "back") is reset.
     const Band selected_band = band;
 
     render_loading_screen();
@@ -58,6 +60,7 @@ void Application::show_panel(const Band& band) {
     input_service_.stop();
     input_service_ = InputService();
     setup_screen_.reset();
+    sync_screen_.reset();
 
     panel_screen_ = std::make_unique<PainelScreen>(
         selected_band, source_.songs(selected_band), player_factory_, *this, fonts_, textures_);
@@ -66,7 +69,28 @@ void Application::show_panel(const Band& band) {
     active_screen_ = ActiveScreen::Panel;
 }
 
+void Application::show_sync(const Band& band) {
+    const Band origin_band = band;  // see show_panel(): copied before panel_screen_ is reset.
+
+    render_loading_screen();
+
+    // No GPIO/footswitch input while in this maintenance screen.
+    input_service_.stop();
+    input_service_ = InputService();
+    panel_screen_.reset();
+
+    sync_screen_ = std::make_unique<SyncScreen>(
+        origin_band, source_.project_root(), *this, fonts_, textures_);
+
+    active_screen_ = ActiveScreen::Sync;
+}
+
 void Application::quit() {
+    running_ = false;
+}
+
+void Application::request_restart() {
+    restart_requested_ = true;
     running_ = false;
 }
 
@@ -150,6 +174,8 @@ void Application::handle_click(int window_x, int window_y) {
         setup_screen_->handle_click(x, y, canvas_width_, canvas_height_);
     } else if (active_screen_ == ActiveScreen::Panel && panel_screen_ != nullptr) {
         panel_screen_->handle_click(x, y, canvas_width_, canvas_height_);
+    } else if (active_screen_ == ActiveScreen::Sync && sync_screen_ != nullptr) {
+        sync_screen_->handle_click(x, y, canvas_width_, canvas_height_);
     }
 }
 
@@ -195,6 +221,8 @@ void Application::run(SDL_Renderer* renderer, int canvas_width, int canvas_heigh
             setup_screen_->render(renderer_, canvas_width_, canvas_height_);
         } else if (active_screen_ == ActiveScreen::Panel && panel_screen_ != nullptr) {
             panel_screen_->render(renderer_, canvas_width_, canvas_height_);
+        } else if (active_screen_ == ActiveScreen::Sync && sync_screen_ != nullptr) {
+            sync_screen_->render(renderer_, canvas_width_, canvas_height_);
         }
 
         SDL_RenderPresent(renderer_);

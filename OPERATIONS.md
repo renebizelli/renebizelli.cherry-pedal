@@ -76,6 +76,41 @@ depende da rede local funcionando.
 
 ---
 
+## Atualizar musicas/bandas por pendrive (sem SSH, sem computador)
+
+O app tem um botao **"Sincronizar"** no canto inferior direito do painel
+de qualquer banda. Ele detecta pendrives/HDs externos conectados e importa
+um `source.json` + `bands/` atualizados de la — util pra atualizar o
+acervo direto no palco, sem precisar de rede/SSH/computador.
+
+**Como preparar o pendrive:** crie, na raiz dele, uma pasta com o nome
+exato `cherry-pedal-data/`, contendo:
+
+```
+cherry-pedal-data/
+  source.json
+  bands/
+    <id-da-banda>/
+      <id-da-musica>/
+        arquivo.wav
+```
+
+(mesmo formato do `source.json`/`bands/` do proprio projeto — veja as
+secoes abaixo para o formato exato de cada campo.)
+
+**No pedal:** conecte o pendrive, abra o painel de qualquer banda, toque
+em "Sincronizar". O app lista os pendrives com dados encontrados; toque
+no que quiser importar. Se tudo estiver valido (todos os WAVs referenciados
+existem), o app copia os arquivos, **reinicia sozinho** e carrega o
+conteudo novo. Se algo estiver faltando/quebrado no pendrive, o app mostra
+o erro na propria tela e **nao mexe** no que ja estava funcionando.
+
+> Nota: so `source.json` e `bands/` sao sincronizados por esse caminho —
+> logos em `assets/` continuam precisando ser atualizados via SSH (secao
+> "Subir uma nova versao do app" acima) se um dia isso for necessario.
+
+---
+
 ## Adicionar uma musica nova a uma banda existente
 
 1. Copie o(s) arquivo(s) WAV para dentro de `bands/<id-da-banda>/<id-da-musica>/`,

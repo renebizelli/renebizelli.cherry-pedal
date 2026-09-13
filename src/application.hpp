@@ -15,6 +15,7 @@
 #include "screens/painel_screen.hpp"
 #include "screens/setup_screen.hpp"
 #include "screens/splash_screen.hpp"
+#include "screens/sync_screen.hpp"
 #include "source_service.hpp"
 #include "texture_cache.hpp"
 
@@ -36,12 +37,15 @@ public:
 
     void show_setup() override;
     void show_panel(const Band& band) override;
+    void show_sync(const Band& band) override;
     void quit() override;
+    void request_restart() override;
 
     void run(SDL_Renderer* renderer, int canvas_width, int canvas_height);
+    bool restart_requested() const { return restart_requested_; }
 
 private:
-    enum class ActiveScreen { Splash, Setup, Panel };
+    enum class ActiveScreen { Splash, Setup, Panel, Sync };
 
     void bind_setup_inputs();
     void bind_panel_inputs();
@@ -64,8 +68,10 @@ private:
     ActiveScreen active_screen_ = ActiveScreen::Splash;
     std::unique_ptr<SetupScreen> setup_screen_;
     std::unique_ptr<PainelScreen> panel_screen_;
+    std::unique_ptr<SyncScreen> sync_screen_;
     InputService input_service_;
     bool running_ = true;
+    bool restart_requested_ = false;
 };
 
 }  // namespace cherry

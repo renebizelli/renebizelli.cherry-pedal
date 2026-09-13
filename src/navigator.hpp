@@ -12,7 +12,9 @@ public:
 
     virtual void show_setup() = 0;
     virtual void show_panel(const Band& band) = 0;
+    virtual void show_sync(const Band& band) = 0;
     virtual void quit() = 0;
+    virtual void request_restart() = 0;
 };
 
 }  // namespace cherry

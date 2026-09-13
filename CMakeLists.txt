@@ -37,6 +37,8 @@ add_library(cherry_core
     src/layout_helpers.cpp
     src/action_queue.cpp
     src/resampler.cpp
+    src/media_scanner.cpp
+    src/content_importer.cpp
 )
 target_include_directories(cherry_core PUBLIC src)
 target_link_libraries(cherry_core PUBLIC nlohmann_json::nlohmann_json Threads::Threads)
@@ -79,6 +81,7 @@ add_library(cherry_ui
     src/screens/splash_screen.cpp
     src/screens/setup_screen.cpp
     src/screens/painel_screen.cpp
+    src/screens/sync_screen.cpp
 )
 target_include_directories(cherry_ui PUBLIC src src/screens ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS})
 target_link_directories(cherry_ui PUBLIC ${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS} ${SDL2_TTF_LIBRARY_DIRS})
@@ -110,6 +113,12 @@ target_link_libraries(test_action_queue PRIVATE cherry_core)
 
 add_executable(test_resampler src/tests/test_resampler.cpp)
 target_link_libraries(test_resampler PRIVATE cherry_core)
+
+add_executable(test_media_scanner src/tests/test_media_scanner.cpp)
+target_link_libraries(test_media_scanner PRIVATE cherry_core)
+
+add_executable(test_content_importer src/tests/test_content_importer.cpp)
+target_link_libraries(test_content_importer PRIVATE cherry_core)
 
 # Final composed application: real SDL2 UI + real PortAudio + real libgpiod.
 # Like each hardware backend individually, end-to-end behavior can only be

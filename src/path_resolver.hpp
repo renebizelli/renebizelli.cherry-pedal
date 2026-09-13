@@ -11,6 +11,8 @@ class PathResolver {
 public:
     explicit PathResolver(std::filesystem::path project_root);
 
+    const std::filesystem::path& project_root() const { return project_root_; }
+
     std::filesystem::path resolve(const std::string& path) const;
 
     std::filesystem::path audio_file_path(

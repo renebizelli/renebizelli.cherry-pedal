@@ -7,6 +7,7 @@
 //
 // One screenshot per process invocation by design: run it once per state
 // you want to inspect (see the `mode` argument below).
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -24,6 +25,7 @@
 #include "setup_screen.hpp"
 #include "source_service.hpp"
 #include "splash_screen.hpp"
+#include "sync_screen.hpp"
 #include "texture_cache.hpp"
 
 using namespace cherry;
@@ -37,7 +39,9 @@ class NoopNavigator : public Navigator {
 public:
     void show_setup() override {}
     void show_panel(const Band&) override {}
+    void show_sync(const Band&) override {}
     void quit() override {}
+    void request_restart() override {}
 };
 
 class NullAudioPlayer : public AudioPlayer {
@@ -75,7 +79,9 @@ void save_screenshot(SDL_Renderer* renderer, const std::string& path) {
 
 int main(int argc, char** argv) {
     if (argc != 3) {
-        std::cerr << "usage: screenshot_demo <splash|setup|setup_selected|panel|panel_navigated|panel_playing> <out.png>\n";
+        std::cerr << "usage: screenshot_demo "
+                      "<splash|setup|setup_selected|panel|panel_navigated|panel_playing|sync> "
+                      "<out.png>\n";
         return 1;
     }
 
@@ -126,6 +132,9 @@ int main(int argc, char** argv) {
         // naturally goes false once the buffer finishes playing.
         panel.do_stop();
         return 0;
+    } else if (mode == "sync") {
+        SyncScreen sync(bands.at(1), std::filesystem::current_path(), navigator, fonts, textures);
+        sync.render(sdl.renderer(), kWidth, kHeight);
     } else {
         std::cerr << "unknown mode: " << mode << "\n";
         return 1;

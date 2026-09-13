@@ -41,6 +41,7 @@ public:
     void do_play();
     void do_stop();
     void back_to_setup();
+    void open_sync();
 
     void handle_key(SDL_Keycode key);
     // Clicking the band name returns to setup, matching the original's
