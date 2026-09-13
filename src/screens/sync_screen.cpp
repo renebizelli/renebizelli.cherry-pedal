@@ -32,9 +32,12 @@ void SyncScreen::handle_click(int x, int y, int canvas_width, int canvas_height)
     (void)canvas_width;
     (void)canvas_height;
 
-    // Generous header band (see PainelScreen's own click zone for why: real
-    // touchscreen accuracy near the top edge proved unreliable in testing).
-    if (y >= -80 && y <= kHeaderHeight + 20) {
+    // Generous header band on the top side only (see PainelScreen's own
+    // click zone for why: real touchscreen accuracy near the top edge
+    // proved unreliable in testing). Capped at kHeaderHeight exactly (no
+    // extra slack below it) so it can't swallow taps meant for the first
+    // candidate/rescan row, which starts right below the header.
+    if (y >= -80 && y <= kHeaderHeight) {
         navigator_.show_panel(origin_band_);
         return;
     }
