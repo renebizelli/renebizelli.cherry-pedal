@@ -13,14 +13,31 @@ publica ja foi autorizada no Pi — ver `claude-session.txt` para o comando
 usado).
 
 ```bash
-ssh -i ~/.ssh/raspberry_pedal pi@192.168.15.5
+ssh -i ~/.ssh/raspberry_pedal pi@192.168.15.4
 ```
 
-IP e usuario podem mudar se a rede/config do Pi mudar — confirme com quem
-administra o equipamento se a conexao falhar. Se a chave privada
-`~/.ssh/raspberry_pedal` nao existir na maquina que voce esta usando, ela
-precisa ser gerada e a chave publica correspondente autorizada em
-`~/.ssh/authorized_keys` no Pi (mesmo processo do `claude-session.txt`).
+**O IP do Pi nao e fixo** (ja mudou pelo menos uma vez, de `.5` para `.4`
+entre 12 e 13/09/2026) — se a conexao der "Connection refused" do nada,
+confirme o IP atual direto na Raspberry (tela/teclado conectados) antes de
+supor problema de rede/firewall:
+
+```bash
+hostname -I
+```
+
+Se o SSH continuar recusando mesmo com o IP certo, verifique a tabela ARP
+da maquina cliente (`arp -a`) — um MAC errado respondendo pelo IP antigo e
+sinal de que outro aparelho pegou aquele endereco nesse meio tempo, nao
+que a Raspberry esta inacessivel. MAC real da interface de rede do Pi:
+`dc:a6:32:6b:67:7b`.
+
+> Recomendado: reservar esse IP para esse MAC nas configuracoes de DHCP do
+> roteador, para o endereco parar de mudar.
+
+Se a chave privada `~/.ssh/raspberry_pedal` nao existir na maquina que
+voce esta usando, ela precisa ser gerada e a chave publica correspondente
+autorizada em `~/.ssh/authorized_keys` no Pi (mesmo processo do
+`claude-session.txt`).
 
 ---
 
@@ -29,7 +46,7 @@ precisa ser gerada e a chave publica correspondente autorizada em
 ### Se o Pi tem o repositorio clonado (recomendado)
 
 ```bash
-ssh -i ~/.ssh/raspberry_pedal pi@192.168.15.5
+ssh -i ~/.ssh/raspberry_pedal pi@192.168.15.4
 cd ~/renebizelli.cherry-pedal
 git pull
 cmake --build build -j4
@@ -41,7 +58,7 @@ novo.
 ### Se preferir so copiar um binario pre-compilado (cross-build feito fora do Pi)
 
 ```bash
-scp build/cherry_pedal pi@192.168.15.5:~/renebizelli.cherry-pedal/build/cherry_pedal
+scp build/cherry_pedal pi@192.168.15.4:~/renebizelli.cherry-pedal/build/cherry_pedal
 ```
 
 ---
