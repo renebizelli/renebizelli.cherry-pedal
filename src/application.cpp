@@ -167,8 +167,19 @@ void Application::handle_click(int window_x, int window_y) {
     float logical_y = 0.0f;
     SDL_RenderWindowToLogical(
         renderer_, window_x, window_y, &logical_x, &logical_y);
+
+    // On this device's touchscreen/X11/SDL stack, both real touches and
+    // synthetic clicks land ~40 logical px above the actual contact point,
+    // consistently across the whole screen (measured via on-device
+    // diagnostics, not a scale/calibration issue since it doesn't grow with
+    // distance from center). Root cause not identified (survives touch
+    // recalibration and a corrected fullscreen window size), so compensate
+    // for the empirically measured constant here rather than leave every
+    // screen's hit-testing silently misaligned with what's drawn.
+    constexpr int kTouchYCorrection = 40;
+
     const int x = static_cast<int>(logical_x);
-    const int y = static_cast<int>(logical_y);
+    const int y = static_cast<int>(logical_y) + kTouchYCorrection;
 
     if (active_screen_ == ActiveScreen::Setup && setup_screen_ != nullptr) {
         setup_screen_->handle_click(x, y, canvas_width_, canvas_height_);
