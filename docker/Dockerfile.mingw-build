@@ -1,0 +1,79 @@
+# Cross-compiles the UI-only part of the project (cherry_core + cherry_ui +
+# screenshot_demo, no PortAudio/libgpiod/cherry_pedal — see CHERRY_UI_ONLY in
+# CMakeLists.txt) into a native Windows .exe using MinGW-w64, so the SDL2
+# screens can be exercised directly on a Windows dev machine instead of only
+# via Docker-generated screenshots.
+FROM debian:bookworm-slim AS build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    g++-mingw-w64-x86-64 \
+    cmake \
+    make \
+    pkg-config \
+    nlohmann-json3-dev \
+    fonts-dejavu-core \
+    curl \
+    ca-certificates \
+    xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Debian's mingw-w64 g++ defaults to the "win32" threading model, whose
+# libstdc++ doesn't actually implement std::thread/std::mutex (the project
+# uses both, e.g. PlayerService's watcher thread and PlaybackSequencer) —
+# switch to the "posix" alternative, which does.
+RUN update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix \
+    && update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+
+# Official MinGW-devel packages for the SDL2 stack (headers + import libs +
+# runtime DLLs), matched to what the Linux build links against via
+# pkg-config. Pinned versions, fetched from the projects' GitHub releases.
+WORKDIR /opt/mingw-deps
+RUN curl -fsSL -o sdl2.tar.gz https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-devel-2.30.11-mingw.tar.gz \
+    && curl -fsSL -o sdl2_image.tar.gz https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.12/SDL2_image-devel-2.8.12-mingw.tar.gz \
+    && curl -fsSL -o sdl2_ttf.tar.gz https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.24.0/SDL2_ttf-devel-2.24.0-mingw.tar.gz \
+    && tar xf sdl2.tar.gz && tar xf sdl2_image.tar.gz && tar xf sdl2_ttf.tar.gz \
+    && mkdir -p /opt/mingw-sysroot \
+    && cp -r SDL2-2.30.11/x86_64-w64-mingw32/* /opt/mingw-sysroot/ \
+    && cp -r SDL2_image-2.8.12/x86_64-w64-mingw32/* /opt/mingw-sysroot/ \
+    && cp -r SDL2_ttf-2.24.0/x86_64-w64-mingw32/* /opt/mingw-sysroot/
+
+# CMakeLists.txt locates SDL2/SDL2_image/SDL2_ttf via pkg-config (module
+# names "sdl2", "SDL2_image", "SDL2_ttf"); the MinGW devel tarballs above
+# don't ship .pc files, so provide them by hand, pointing at the merged
+# sysroot just assembled.
+RUN mkdir -p /opt/mingw-sysroot/lib/pkgconfig \
+    && for spec in "sdl2:SDL2:sdl2" "SDL2_image:SDL2_image:SDL2_image" "SDL2_ttf:SDL2_ttf:SDL2_ttf"; do \
+        name=$(echo "$spec" | cut -d: -f1); \
+        libname=$(echo "$spec" | cut -d: -f2); \
+        pcname=$(echo "$spec" | cut -d: -f3); \
+        printf 'prefix=/opt/mingw-sysroot\nincludedir=${prefix}/include/SDL2\nlibdir=${prefix}/lib\n\nName: %s\nDescription: %s (MinGW)\nVersion: 0\nCflags: -I${includedir}\nLibs: -L${libdir} -l%s\n' \
+            "$name" "$name" "$libname" > "/opt/mingw-sysroot/lib/pkgconfig/${pcname}.pc"; \
+    done
+
+WORKDIR /repo
+COPY . .
+
+ENV PKG_CONFIG_LIBDIR=/opt/mingw-sysroot/lib/pkgconfig
+ENV PKG_CONFIG_PATH=/opt/mingw-sysroot/lib/pkgconfig
+
+RUN cmake -B build-windows -S . \
+    -DCMAKE_TOOLCHAIN_FILE=docker/mingw-w64-toolchain.cmake \
+    -DCHERRY_UI_ONLY=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_PREFIX_PATH=/opt/mingw-sysroot \
+    && cmake --build build-windows --target screenshot_demo desktop_demo -j4
+
+# Runtime DLLs screenshot_demo.exe/desktop_demo.exe need next to them on
+# Windows: SDL2/_image/_ttf plus their own bundled dependencies (libpng,
+# zlib, freetype, ...), and MinGW's own C++/pthread runtime DLLs.
+RUN mkdir -p /out \
+    && cp build-windows/screenshot_demo.exe /out/ \
+    && cp build-windows/desktop_demo.exe /out/ \
+    && cp /opt/mingw-sysroot/bin/*.dll /out/ \
+    && cp /usr/lib/gcc/x86_64-w64-mingw32/12-posix/libstdc++-6.dll /out/ \
+    && cp /usr/lib/gcc/x86_64-w64-mingw32/12-posix/libgcc_s_seh-1.dll /out/ \
+    && cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll /out/ \
+    && cp /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf /out/
+
+FROM scratch AS export
+COPY --from=build /out /
