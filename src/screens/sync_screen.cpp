@@ -61,6 +61,11 @@ void SyncScreen::handle_click(int x, int y, int canvas_width, int canvas_height)
                 navigator_.request_restart();
             } catch (const ContentImportError& error) {
                 status_message_ = error.what();
+                // A small status line at the bottom of a touchscreen kiosk
+                // is easy to miss (e.g. someone walking away mid-copy) — a
+                // blocking popup makes the failure impossible to overlook.
+                SDL_ShowSimpleMessageBox(
+                    SDL_MESSAGEBOX_ERROR, "Erro ao sincronizar", error.what(), nullptr);
                 rescan();
             }
             return;
