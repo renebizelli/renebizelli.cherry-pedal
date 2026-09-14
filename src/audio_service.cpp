@@ -6,9 +6,11 @@ AudioService::AudioService(
     Song song,
     AudioPlayerFactory& player_factory,
     PlaybackSequencer& sequencer,
-    PlayerService::EventCallback callback)
+    PlayerService::EventCallback callback,
+    LoadProgressCallback load_progress)
     : song_(std::move(song)) {
-    players_.reserve(song_.audios.size());
+    const std::size_t total = song_.audios.size();
+    players_.reserve(total);
 
     for (const auto& audio : song_.audios) {
         players_.push_back(std::make_unique<PlayerService>(
@@ -17,6 +19,10 @@ AudioService::AudioService(
             sequencer,
             callback,
             [this]() { autoforward(); }));
+
+        if (load_progress) {
+            load_progress(players_.size(), total);
+        }
     }
 
     std::lock_guard<std::mutex> lock(mutex_);

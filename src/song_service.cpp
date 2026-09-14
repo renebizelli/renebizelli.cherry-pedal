@@ -5,8 +5,12 @@ namespace cherry {
 SongService::SongService(
     AudioPlayerFactory& player_factory,
     PlaybackSequencer& sequencer,
-    PlayerService::EventCallback callback)
-    : player_factory_(player_factory), sequencer_(sequencer), callback_(std::move(callback)) {}
+    PlayerService::EventCallback callback,
+    LoadProgressCallback load_progress)
+    : player_factory_(player_factory),
+      sequencer_(sequencer),
+      callback_(std::move(callback)),
+      load_progress_(std::move(load_progress)) {}
 
 void SongService::set_songs(std::vector<Song> songs) {
     songs_ = std::move(songs);
@@ -14,17 +18,17 @@ void SongService::set_songs(std::vector<Song> songs) {
     audio_service_.reset();
 
     if (!songs_.empty()) {
-        init_audio();
+        init_audio(load_progress_);
     }
 }
 
-void SongService::init_audio() {
+void SongService::init_audio(LoadProgressCallback progress) {
     if (audio_service_ != nullptr) {
         audio_service_->stop();
     }
 
     audio_service_ = std::make_unique<AudioService>(
-        songs_[index_], player_factory_, sequencer_, callback_);
+        songs_[index_], player_factory_, sequencer_, callback_, std::move(progress));
 }
 
 void SongService::forward() {

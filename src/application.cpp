@@ -1,6 +1,7 @@
 #include "application.hpp"
 
 #include <chrono>
+#include <cstddef>
 #include <thread>
 
 namespace cherry {
@@ -55,15 +56,28 @@ void Application::show_panel(const Band& band) {
     // SetupScreen::confirm_selection() or SyncScreen's "back") is reset.
     const Band selected_band = band;
 
-    render_loading_screen();
+    render_loading_screen(0.0);
 
     input_service_.stop();
     input_service_ = InputService();
     setup_screen_.reset();
     sync_screen_.reset();
 
+    // The first song's audio files are preloaded (decoded/resampled)
+    // synchronously inside PainelScreen's constructor below — this callback
+    // fires after each one finishes, so the loading screen's bar fills with
+    // real progress instead of just flashing once at the start and once at
+    // the end.
     panel_screen_ = std::make_unique<PainelScreen>(
-        selected_band, source_.songs(selected_band), player_factory_, *this, fonts_, textures_);
+        selected_band,
+        source_.songs(selected_band),
+        player_factory_,
+        *this,
+        fonts_,
+        textures_,
+        [this](std::size_t loaded, std::size_t total) {
+            render_loading_screen(total > 0 ? static_cast<double>(loaded) / total : 1.0);
+        });
 
     bind_panel_inputs();
     active_screen_ = ActiveScreen::Panel;
@@ -190,13 +204,13 @@ void Application::handle_click(int window_x, int window_y) {
     }
 }
 
-void Application::render_loading_screen() {
+void Application::render_loading_screen(double progress) {
     if (renderer_ == nullptr) {
         return;
     }
 
     SplashScreen splash(textures_, assets_dir_ + "/cherry.jpg");
-    splash.render(renderer_, canvas_width_, canvas_height_);
+    splash.render(renderer_, canvas_width_, canvas_height_, progress);
     SDL_RenderPresent(renderer_);
 }
 

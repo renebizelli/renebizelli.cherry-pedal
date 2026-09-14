@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -11,6 +12,13 @@
 #include "player_service.hpp"
 
 namespace cherry {
+
+// Reports how many of a song's audio files have finished preloading (WAV
+// decode + resample, done synchronously per file), so a caller can show
+// incremental loading feedback instead of a single opaque pause. `total` is
+// the song's total audio count, passed on every call so the callback never
+// needs it supplied separately.
+using LoadProgressCallback = std::function<void(std::size_t loaded, std::size_t total)>;
 
 // Preloads one PlayerService per audio of a song and keeps track of which
 // one is "current", stopping the previous clip whenever the selection moves.
@@ -26,7 +34,8 @@ public:
         Song song,
         AudioPlayerFactory& player_factory,
         PlaybackSequencer& sequencer,
-        PlayerService::EventCallback callback);
+        PlayerService::EventCallback callback,
+        LoadProgressCallback load_progress = nullptr);
 
     void forward();
     const Audio& current() const;

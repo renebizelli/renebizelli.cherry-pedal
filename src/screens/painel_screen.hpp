@@ -33,7 +33,8 @@ public:
         AudioPlayerFactory& player_factory,
         Navigator& navigator,
         FontCache& fonts,
-        TextureCache& textures);
+        TextureCache& textures,
+        LoadProgressCallback load_progress = nullptr);
 
     void song_forward();
     void song_backward();

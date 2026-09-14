@@ -19,7 +19,8 @@ public:
     SongService(
         AudioPlayerFactory& player_factory,
         PlaybackSequencer& sequencer,
-        PlayerService::EventCallback callback);
+        PlayerService::EventCallback callback,
+        LoadProgressCallback load_progress = nullptr);
 
     void set_songs(std::vector<Song> songs);
 
@@ -35,11 +36,17 @@ public:
     double current_progress() const;
 
 private:
-    void init_audio();
+    // progress is only ever supplied for the very first song of a freshly
+    // selected band (see set_songs()); forward()/backward() reload silently
+    // — same as before this callback existed — since those happen while
+    // already inside the panel, not during the band-selection transition
+    // this is meant to give feedback for.
+    void init_audio(LoadProgressCallback progress = nullptr);
 
     AudioPlayerFactory& player_factory_;
     PlaybackSequencer& sequencer_;
     PlayerService::EventCallback callback_;
+    LoadProgressCallback load_progress_;
 
     std::vector<Song> songs_;
     std::size_t index_ = 0;

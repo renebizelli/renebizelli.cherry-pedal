@@ -19,7 +19,8 @@ public:
     PedalController(
         std::vector<Song> songs,
         AudioPlayerFactory& player_factory,
-        PlayerService::EventCallback callback);
+        PlayerService::EventCallback callback,
+        LoadProgressCallback load_progress = nullptr);
 
     const Song* current_song() const;
     const Audio* current_audio() const;

@@ -15,7 +15,12 @@ class SplashScreen {
 public:
     SplashScreen(TextureCache& textures, std::string logo_path);
 
-    void render(SDL_Renderer* renderer, int canvas_width, int canvas_height) const;
+    // progress in [0.0, 1.0] fills a white bar under the logo; values
+    // outside that range are clamped. Defaults to a full bar, matching a
+    // caller with nothing incremental to report (there's no partial state
+    // worth showing, so "done" reads better than an empty bar).
+    void render(
+        SDL_Renderer* renderer, int canvas_width, int canvas_height, double progress = 1.0) const;
 
 private:
     TextureCache& textures_;

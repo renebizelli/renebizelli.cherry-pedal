@@ -34,13 +34,17 @@ PainelScreen::PainelScreen(
     AudioPlayerFactory& player_factory,
     Navigator& navigator,
     FontCache& fonts,
-    TextureCache& textures)
+    TextureCache& textures,
+    LoadProgressCallback load_progress)
     : band_(std::move(band)),
       navigator_(navigator),
       fonts_(fonts),
       textures_(textures),
       controller_(
-          std::move(songs), player_factory, [this](AudioEvent event) { on_audio_event(event); }) {}
+          std::move(songs),
+          player_factory,
+          [this](AudioEvent event) { on_audio_event(event); },
+          std::move(load_progress)) {}
 
 void PainelScreen::on_audio_event(AudioEvent event) {
     if (event == AudioEvent::Starts) {

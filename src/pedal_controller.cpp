@@ -5,8 +5,9 @@ namespace cherry {
 PedalController::PedalController(
     std::vector<Song> songs,
     AudioPlayerFactory& player_factory,
-    PlayerService::EventCallback callback)
-    : song_service_(player_factory, sequencer_, std::move(callback)) {
+    PlayerService::EventCallback callback,
+    LoadProgressCallback load_progress)
+    : song_service_(player_factory, sequencer_, std::move(callback), std::move(load_progress)) {
     song_service_.set_songs(std::move(songs));
 }
 

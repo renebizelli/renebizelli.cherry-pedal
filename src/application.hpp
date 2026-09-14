@@ -51,7 +51,7 @@ private:
     void bind_panel_inputs();
     void handle_key(SDL_Keycode key);
     void handle_click(int window_x, int window_y);
-    void render_loading_screen();
+    void render_loading_screen(double progress = 1.0);
 
     SourceService& source_;
     AudioPlayerFactory& player_factory_;
