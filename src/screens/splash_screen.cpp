@@ -7,7 +7,6 @@ namespace cherry {
 namespace {
 constexpr int kLogoWidth = 150;
 constexpr int kLogoHeight = 350;
-constexpr int kBarWidth = 200;
 constexpr int kBarHeight = 6;
 constexpr int kBarMarginTop = 14;
 // The logo alone (350px tall) barely fits the 400px-tall canvas already —
@@ -41,15 +40,15 @@ void SplashScreen::render(
 
     const double clamped_progress = std::clamp(progress, 0.0, 1.0);
     const SDL_Rect bar_track{
-        (canvas_width - kBarWidth) / 2,
+        0,
         logo_top + kLogoHeight + kBarMarginTop,
-        kBarWidth,
+        canvas_width,
         kBarHeight,
     };
     const SDL_Rect bar_fill{
         bar_track.x,
         bar_track.y,
-        static_cast<int>(kBarWidth * clamped_progress),
+        static_cast<int>(canvas_width * clamped_progress),
         kBarHeight,
     };
 
