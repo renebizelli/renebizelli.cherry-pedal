@@ -22,6 +22,7 @@ public:
     void play() override;
     void stop() override;
     bool is_playing() const override;
+    double progress() const override;
 
 private:
     std::shared_ptr<PortAudioChannel> channel_;

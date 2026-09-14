@@ -32,6 +32,7 @@ public:
 
     void play();
     void stop();
+    double current_progress() const;
 
 private:
     void init_audio();

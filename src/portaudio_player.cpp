@@ -68,4 +68,8 @@ bool PortAudioPlayer::is_playing() const {
     return channel_->is_playing();
 }
 
+double PortAudioPlayer::progress() const {
+    return channel_->progress();
+}
+
 }  // namespace cherry

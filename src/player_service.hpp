@@ -38,6 +38,7 @@ public:
 
     void play();
     void stop();
+    double progress() const;
 
 private:
     enum class EndReason { ByPlay, ByStop };

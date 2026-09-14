@@ -69,6 +69,10 @@ void PlayerService::stop() {
     }
 }
 
+double PlayerService::progress() const {
+    return player_->progress();
+}
+
 void PlayerService::watch_for_end(PlaybackSequencer::PlayId play_id) {
     while (player_->is_playing()) {
         std::this_thread::sleep_for(kEndPollInterval);

@@ -16,6 +16,10 @@ public:
     virtual void play() = 0;
     virtual void stop() = 0;
     virtual bool is_playing() const = 0;
+
+    // Fraction of the loaded clip already played, in [0.0, 1.0]. 0.0 when
+    // nothing has played yet.
+    virtual double progress() const = 0;
 };
 
 }  // namespace cherry

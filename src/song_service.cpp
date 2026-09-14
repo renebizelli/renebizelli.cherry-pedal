@@ -83,4 +83,8 @@ void SongService::stop() {
     }
 }
 
+double SongService::current_progress() const {
+    return audio_service_ != nullptr ? audio_service_->progress() : 0.0;
+}
+
 }  // namespace cherry

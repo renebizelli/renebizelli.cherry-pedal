@@ -38,6 +38,9 @@ public:
     void stop();
     bool is_playing() const;
 
+    // Fraction of the current buffer already played, in [0.0, 1.0].
+    double progress() const;
+
     static constexpr double sample_rate() { return 44100.0; }
     static constexpr int channel_count() { return 2; }
 

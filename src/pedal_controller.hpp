@@ -30,6 +30,7 @@ public:
 
     void play();
     void stop();
+    double current_progress() const;
 
 private:
     PlaybackSequencer sequencer_;

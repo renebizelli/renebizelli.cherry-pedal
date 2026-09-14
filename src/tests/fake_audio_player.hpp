@@ -20,8 +20,12 @@ public:
     bool is_playing() const { return playing_.load(); }
     void finish() { playing_.store(false); }
 
+    double progress() const { return progress_.load(); }
+    void set_progress(double value) { progress_.store(value); }
+
 private:
     std::atomic<bool> playing_{false};
+    std::atomic<double> progress_{0.0};
 };
 
 class FakeAudioPlayer : public AudioPlayer {
@@ -32,6 +36,7 @@ public:
     void play() override { channel_->play(); }
     void stop() override { channel_->stop(); }
     bool is_playing() const override { return channel_->is_playing(); }
+    double progress() const override { return channel_->progress(); }
 
     const std::string& loaded_file() const { return loaded_file_; }
 

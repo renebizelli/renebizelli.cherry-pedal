@@ -32,6 +32,7 @@ public:
     const Audio& current() const;
     void play();
     void stop();
+    double progress() const;
 
 private:
     void advance_locked();

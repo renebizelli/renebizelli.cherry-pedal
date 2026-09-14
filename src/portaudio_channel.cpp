@@ -70,6 +70,16 @@ bool PortAudioChannel::is_playing() const {
     return playing_.load(std::memory_order_acquire);
 }
 
+double PortAudioChannel::progress() const {
+    const auto buffer = std::atomic_load(&buffer_);
+    if (buffer == nullptr || buffer->empty()) {
+        return 0.0;
+    }
+
+    const std::size_t position = std::min(position_.load(std::memory_order_relaxed), buffer->size());
+    return static_cast<double>(position) / static_cast<double>(buffer->size());
+}
+
 int PortAudioChannel::render_callback(
     const void* /*input*/,
     void* output,

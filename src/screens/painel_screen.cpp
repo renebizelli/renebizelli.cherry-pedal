@@ -1,5 +1,6 @@
 #include "painel_screen.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <string>
@@ -45,9 +46,13 @@ void PainelScreen::on_audio_event(AudioEvent event) {
     if (event == AudioEvent::Starts) {
         playing_.store(true, std::memory_order_release);
     } else if (event == AudioEvent::Ends) {
+        // Only clears the playing (triangle) indicator here. The stopped
+        // (square) indicator is deliberately NOT armed from this natural-end
+        // path — a track finishing on its own (with or without autoforward)
+        // should leave the indicator hidden; it should only appear when the
+        // STOP footswitch/key was actually pressed, which do_stop() below
+        // arms explicitly.
         playing_.store(false, std::memory_order_release);
-        has_stopped_once_.store(true, std::memory_order_release);
-        last_stop_at_ms_.store(now_ms(), std::memory_order_release);
     }
     // AudioEvent::NotFound has nothing further to draw: the missing file
     // was already reported during startup validation.
@@ -200,6 +205,14 @@ void PainelScreen::render(SDL_Renderer* renderer, int canvas_width, int canvas_h
             if (selected) {
                 SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
                 SDL_RenderFillRect(renderer, &row);
+
+                if (playing_.load(std::memory_order_acquire)) {
+                    SDL_Rect loaded_row = row;
+                    loaded_row.w = static_cast<int>(row.w * std::clamp(controller_.current_progress(), 0.0, 1.0));
+
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 139, 255);  // darkblue
+                    SDL_RenderFillRect(renderer, &loaded_row);
+                }
             }
 
             const std::string label =

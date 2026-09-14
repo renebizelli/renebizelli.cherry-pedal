@@ -41,4 +41,8 @@ void PedalController::stop() {
     song_service_.stop();
 }
 
+double PedalController::current_progress() const {
+    return song_service_.current_progress();
+}
+
 }  // namespace cherry

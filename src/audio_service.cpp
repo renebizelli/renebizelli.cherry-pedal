@@ -70,4 +70,8 @@ void AudioService::stop() {
     current_player()->stop();
 }
 
+double AudioService::progress() const {
+    return current_player()->progress();
+}
+
 }  // namespace cherry
