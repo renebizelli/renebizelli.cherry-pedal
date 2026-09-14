@@ -19,6 +19,7 @@
 #include "audio_player.hpp"
 #include "audio_player_factory.hpp"
 #include "debounced_button.hpp"
+#include "demo_font_path.hpp"
 #include "font_cache.hpp"
 #include "gpio_button_factory.hpp"
 #include "gpio_event_source.hpp"
@@ -102,21 +103,6 @@ public:
     }
 };
 
-std::string font_path() {
-#ifdef _WIN32
-    // Resolved next to the executable itself (not cwd) so this still finds
-    // the bundled font regardless of the working directory it's launched
-    // from — see the matching comment in screenshot_demo.cpp.
-    char* base_path_raw = SDL_GetBasePath();
-    std::string path =
-        std::string(base_path_raw != nullptr ? base_path_raw : "") + "DejaVuSans-Bold.ttf";
-    SDL_free(base_path_raw);
-    return path;
-#else
-    return "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf";
-#endif
-}
-
 }  // namespace
 
 int main() {
@@ -140,7 +126,7 @@ int main() {
         try {
             SdlContext sdl(
                 "Cherry (desktop test - sem audio/GPIO real)", kCanvasWidth, kCanvasHeight, false);
-            FontCache fonts(font_path());
+            FontCache fonts(tools::demo_font_path());
             TextureCache textures(sdl.renderer());
 
             NullAudioPlayerFactory player_factory;

@@ -1,5 +1,7 @@
 #include "sync_screen.hpp"
 
+#include <iostream>
+
 #include "text_renderer.hpp"
 
 namespace cherry {
@@ -64,8 +66,15 @@ void SyncScreen::handle_click(int x, int y, int canvas_width, int canvas_height)
                 // A small status line at the bottom of a touchscreen kiosk
                 // is easy to miss (e.g. someone walking away mid-copy) — a
                 // blocking popup makes the failure impossible to overlook.
-                SDL_ShowSimpleMessageBox(
-                    SDL_MESSAGEBOX_ERROR, "Erro ao sincronizar", error.what(), nullptr);
+                // Not every SDL video driver implements message boxes (e.g.
+                // a bare KMSDRM setup with no window manager); when it
+                // fails, at least leave a trail on stderr since the popup
+                // itself won't appear.
+                if (SDL_ShowSimpleMessageBox(
+                        SDL_MESSAGEBOX_ERROR, "Erro ao sincronizar", error.what(), nullptr) != 0) {
+                    std::cerr << "SDL_ShowSimpleMessageBox failed (" << SDL_GetError()
+                              << "); sync error was: " << error.what() << "\n";
+                }
                 rescan();
             }
             return;

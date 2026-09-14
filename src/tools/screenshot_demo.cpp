@@ -18,6 +18,7 @@
 
 #include "audio_player.hpp"
 #include "audio_player_factory.hpp"
+#include "demo_font_path.hpp"
 #include "font_cache.hpp"
 #include "navigator.hpp"
 #include "painel_screen.hpp"
@@ -92,18 +93,7 @@ int main(int argc, char** argv) {
     const std::string out_path = argv[2];
 
     SdlContext sdl("Cherry Pedal (demo)", kWidth, kHeight, false);
-#ifdef _WIN32
-    // No system-wide DejaVu path on Windows (this tool otherwise only
-    // targets the Linux dev/CI image) — expect the font bundled next to the
-    // executable itself, resolved via its base path rather than cwd so the
-    // tool still works when invoked from another directory.
-    char* base_path_raw = SDL_GetBasePath();
-    const std::string font_path = std::string(base_path_raw != nullptr ? base_path_raw : "") + "DejaVuSans-Bold.ttf";
-    SDL_free(base_path_raw);
-    FontCache fonts(font_path);
-#else
-    FontCache fonts("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf");
-#endif
+    FontCache fonts(tools::demo_font_path());
     TextureCache textures(sdl.renderer());
     NoopNavigator navigator;
 
