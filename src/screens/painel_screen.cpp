@@ -14,7 +14,7 @@ namespace {
 constexpr int kBandColumnWidth = 560;
 constexpr int kIndicatorColumnWidth = 240;
 constexpr int kHeaderHeight = 54;
-constexpr int kSongHeight = 115;
+constexpr int kSongHeight = 58;
 constexpr int kIndicatorRadius = 70;
 constexpr int kHeaderPadding = 16;
 constexpr int kSyncButtonHeight = 40;
